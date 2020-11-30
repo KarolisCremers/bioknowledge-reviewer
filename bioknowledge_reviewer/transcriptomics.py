@@ -12,7 +12,7 @@ import datetime
 import pandas as pd
 import os
 from biothings_client import get_client
-
+from Node import Node
 # VARIABLES
 today = datetime.date.today()
 
@@ -37,19 +37,19 @@ def read_data(csv_path):
     print('\nThe function "read_data()" is running...')
     # import table S1 (dNGLY1 KO - transcriptomic profile)
     #csv_path = '~/workspace/ngly1-graph/regulation/ngly1-fly-chow-2018/data/supp_table_1.csv'
-    data_df = pd.read_csv('{}'.format(csv_path))
+    data_df = pd.read_csv('{}'.format(csv_path), sep='\t')
     print('\n* This is the size of the raw expression data structure: {}'.format(data_df.shape))
     print('* These are the expression attributes: {}'.format(data_df.columns))
     print('* This is the first record:\n{}'.format(data_df.head(1)))
 
     # save raw data
-    path = os.getcwd() + '/transcriptomics/ngly1-fly-chow-2018/data'
+    path = os.getcwd() + '/transcriptomics/HD/data'
     if not os.path.isdir(path): os.makedirs(path)
-    if not os.path.exists('{}/supp_table_1.csv'.format(path)):
-        data_df.to_csv('{}/supp_table_1.csv'.format(path), index=False)
-    print('\nThe raw data is saved at: {}/supp_table_1.csv\n'.format(path))
+    if not os.path.exists('{}/GSE64810_mlhd_DESeq2_diffexp_DESeq2_outlier_trimmed_adjust.csv'.format(path)):
+        data_df.to_csv('{}/GSE64810_mlhd_DESeq2_diffexp_DESeq2_outlier_trimmed_adjust.csv'.format(path), index=False)
+    print('\nThe raw data is saved at: {}/GSE64810_mlhd_DESeq2_diffexp_DESeq2_outlier_trimmed_adjust.csv\n'.format(path))
     print('\nFinished read_data().\n')
-
+    data_df = data_df.rename(columns={'Unnamed: 0': 'EnsembleID'})
     return data_df
 
 
@@ -65,14 +65,14 @@ def clean_data(data_df):
     up = data_df.query('log2FoldChange >= 0.57 and padj <= 0.05')
     down = data_df.query('log2FoldChange <= -0.57 and padj <= 0.05')
     up = (up
-          [['FlyBase ID', 'Symbol', 'log2FoldChange', 'pvalue', 'padj']]
+          [['EnsembleID', 'symbol', 'log2FoldChange', 'pvalue', 'padj']]
           # .rename(columns={'log2FoldChange': 'log2FC', 'padj': 'FDR'})
           .reset_index(drop=True)
           .assign(Regulation='Upregulated')
           )
     #up.sort_values(by='log2FoldChange', ascending=False).head(1)
     down = (down
-            [['FlyBase ID', 'Symbol', 'log2FoldChange', 'pvalue', 'padj']]
+            [['EnsembleID', 'symbol', 'log2FoldChange', 'pvalue', 'padj']]
             # .rename(columns={'log2FoldChange': 'log2FC', 'padj': 'FDR'})
             .reset_index(drop=True)
             .assign(Regulation='Downregulated')
@@ -84,10 +84,10 @@ def clean_data(data_df):
     print('* This is the first record:\n{}'.format(subset_df.head(1)))
 
     # save subset
-    path = os.getcwd() + '/transcriptomics/ngly1-fly-chow-2018/out'
+    path = os.getcwd() + '/transcriptomics/HD/out'
     if not os.path.isdir(path): os.makedirs(path)
-    subset_df.to_csv('{}/fc1.5_fdr5_transcriptome_fly.csv'.format(path), index=False)
-    print('\nThe clean data is saved at: {}/fc1.5_fdr5_transcriptome_fly.csv\n'.format(path))
+    subset_df.to_csv('{}/Transcriptome_human_BA9.csv'.format(path), index=False)
+    print('\nThe clean data is saved at: {}/Transcriptome_human_BA9.csv\n'.format(path))
     print('\nFinished clean_data().\n')
 
     return subset_df
@@ -104,28 +104,28 @@ def prepare_data_edges(chow):
     # read dataset
     # csv_path = os.getcwd() + '/transcriptomics/ngly1-fly-chow-2018/out/fc1.5_fdr5_transcriptome_fly.csv'
     # chow = pd.read_csv('{}'.format(csv_path))
-
+    #TODO: discuss edge property
     # prepare edges
     chow = (chow
-            .rename(columns={'FlyBase ID': 'flybase_id', 'Symbol': 'symbol', 'Regulation': 'regulation'})
+            .rename(columns={'EnsembleID': 'ensemble_id', 'Regulation': 'regulation'})
             .assign(source='Chow')
-            .assign(subject_id='FlyBase:FBgn0033050')
-            .assign(subject_label='Pngl')
+            .assign(subject_id='ensembl:ENSG00000197386')
+            .assign(subject_label='HTT')
             .assign(property_id='RO:0002434')
             .assign(property_label='interacts with')
-            .assign(reference_id='PMID:29346549')
+            .assign(reference_id='PMID:26636579')
             )
-    chow['object_id'] = chow.flybase_id.apply(lambda x: 'FlyBase:' + str(x))
+    chow['object_id'] = chow.ensemble_id.apply(lambda x: 'ensembl:' + str(x).split(".")[0])
     
     # save individual dataset edges
-    path = os.getcwd() + '/transcriptomics/ngly1-fly-chow-2018/out'
+    path = os.getcwd() + '/transcriptomics/HD/out'
     if not os.path.isdir(path): os.makedirs(path)
-    chow.to_csv('{}/chow_fc1.5_fdr5_transcriptome_fly_edges.csv'.format(path), index=False)
+    chow.to_csv('{}/Transcriptome_human_BA9_edges.csv'.format(path), index=False)
     print('\n* This is the size of the expression data structure: {}'.format(chow.shape))
     print('* These are the expression attributes: {}'.format(chow.columns))
     print('* This is the first record:\n{}'.format(chow.head(1)))
-    print('\nThe ngly1-fly-chow-2018 transcriptomics expression edges are saved at:'
-          ' {}/chow_fc1.5_fdr5_transcriptome_fly_edges.csv\n'.format(path))
+    print('\nThe HD BA9 transcriptomics expression edges are saved at:'
+          ' {}/Transcriptome_human_BA9_edges.csv\n'.format(path))
     print('\nFinished prepare_data_edges().\n')
 
     return chow
@@ -219,9 +219,9 @@ def build_edges(edges):
         edge['property_uri'] = property_uri
         edge['reference_uri'] = reference_uri
         edge[
-            'reference_supporting_text'] = 'To understand how loss of NGLY1 contributes to disease, we developed a Drosophila model of NGLY1 deficiency. Loss of NGLY1 function resulted in developmental delay and lethality. We used RNAseq to determine which processes are misregulated in the absence of NGLY1.' if \
+            'reference_supporting_text'] = 'Here we present a genome-wide analysis of mRNA expression in human prefrontal cortex from 20 HD and 49 neuropathologically normal controls using next generation high-throughput sequencing.' if \
         row['source'] == 'Chow' else 'This edge comes from the RNA-seq profile dataset extracted by the XXX Lab YYYY.'
-        edge['reference_date'] = '2018-03-15' if row['source'] == 'Chow' else 'NA'
+        edge['reference_date'] = '2015-11-04' if row['source'] == 'Chow' else 'NA'
         edges_l.append(edge)
 
     # save edges file
@@ -237,6 +237,25 @@ def build_edges(edges):
     print('\nFinished build_edges().\n')
 
     return edges_l
+
+
+def merge_to_node(concept_dict, gene_info):
+    """
+    This function cobines the dictionary obtained from the edges
+    with the results found using mygene.info api.
+    (uses ensembl ID's)
+    """
+    node_list = list()
+    for idx, row in gene_info.iterrows():
+        node = Node("ensembl:" + idx)
+        node.semantic_groups = "GENE"
+        node.preflabel = concept_dict[node.id]['preflabel']
+        node.name = row["name"]
+        node.synonyms = '|'.join(list(row['alias'])) if isinstance(
+            row['alias'], list) else row['alias']
+        node.description = row['summary']
+        node_list.append(node.get_dict())
+    return node_list
 
 
 def build_nodes(edges):
@@ -262,46 +281,65 @@ def build_nodes(edges):
     # biothings api + dictionaries
     # input list for api: since by id we have flybase, hgnc/entrez or ensembl, i am gonna use symbol
     symbols = list()
+    #test variable for direct ensemble query:
+    ENSID = list()
     for idx, symbol in concept_dct.items():
         # id = key.split(':')[1] if ':' in key else key
         symbols.append(symbol['preflabel'])
-
+        #idx[9:]
+        ENSID.append(idx.replace("ensembl:","").split('.')[0])
+        
     #print(symbols[0:5])
     #len(symbols)
 
     # api call
     mg = get_client('gene')
-    df = mg.querymany(symbols, scopes='symbol,alias', fields='alias,name,summary', size=1, as_dataframe=True)
+    # symbols, scopes='symbol,alias'
+    # ENSID, scopes='ensembl'
+    df = mg.querymany(ENSID, scopes='ensembl.gene', fields='alias,name,summary', size=1, as_dataframe=True)
+    
+    nodes_l = merge_to_node(concept_dct, df)
     #df.head(2)
     #print(df.shape)
     #print(len(concept_dct.keys()))
 
     # dictionaries {id: {name:, alias:, summary:}}
-    i = 0
-    #print(len(concept_dct))
-    for symbol, row in df.iterrows():
-        # associate concept to symbol
-        for concept in concept_dct:
-            if concept_dct[concept]['preflabel'] == symbol:
-                i += 1
-                # add attributes
-                concept_dct[concept]['name'] = row['name']
-                concept_dct[concept]['synonyms'] = row['alias']
-                concept_dct[concept]['description'] = row['summary']
+#    i = 0
+#    #print(len(concept_dct))
+#    for symbol, row in df.iterrows():
+#        # associate concept to symbol
+#        for concept in concept_dct:
+#            if concept_dct[concept]['preflabel'] == symbol:
+#                i += 1
+#                # add attributes
+#                concept_dct[concept]['name'] = row['name']
+#                concept_dct[concept]['synonyms'] = row['alias']
+#                concept_dct[concept]['description'] = row['summary']
+#
+#    # build a list of nodes as list of dict, i.e a df, where a dict is a node
+#    #TODO merge the top and bottom for loops
+#    # 
+#    nodes_l = list()
+#    for concept in concept_dct:
+#        # node for subject
+#        node = dict()
+#        node['id'] = concept
+#        node['semantic_groups'] = 'GENE'
+#        if 'name' in concept_dct[concept]:
+#            node['preflabel'] = concept_dct[concept]['preflabel']
+#            node['name'] = concept_dct[concept]['name']
+#            node['synonyms'] = '|'.join(list(concept_dct[concept]['synonyms'])) if isinstance(
+#                concept_dct[concept]['synonyms'], list) else concept_dct[concept]['synonyms']
+#            node['description'] = concept_dct[concept]['description']
+#        else:
+#            print(concept)
+#            print("Has no Symbol in dataset, filling metadata with NA instead")
+#            node['preflabel'] = "NA"
+#            node['name'] = "NA"
+#            node['synonyms'] = "NA"
+#            node['description'] = "NA"
+#        nodes_l.append(node)
 
-    # build a list of nodes as list of dict, i.e a df, where a dict is a node
-    nodes_l = list()
-    for concept in concept_dct:
-        # node for subject
-        node = dict()
-        node['id'] = concept
-        node['semantic_groups'] = 'GENE'
-        node['preflabel'] = concept_dct[concept]['preflabel']
-        node['name'] = concept_dct[concept]['name']
-        node['synonyms'] = '|'.join(list(concept_dct[concept]['synonyms'])) if isinstance(
-            concept_dct[concept]['synonyms'], list) else concept_dct[concept]['synonyms']
-        node['description'] = concept_dct[concept]['description']
-        nodes_l.append(node)
 
     # save nodes file
     path = os.getcwd() + '/graph'
@@ -333,7 +371,7 @@ def _print_nodes(nodes, filename):
 if __name__ == '__main__':
 
     # prepare data to graph schema
-    csv_path = '~/workspace/ngly1-graph/regulation/ngly1-fly-chow-2018/data/supp_table_1.csv'
+    csv_path = '~/Structured review/bioknowledge-reviewer/bioknowledge_reviewer/transcriptomics/GSE64810_mlhd_DESeq2_diffexp_DESeq2_outlier_trimmed_adjust.txt'
     data = read_data(csv_path)
     clean_data = clean_data(data)
     data_edges = prepare_data_edges(clean_data)
@@ -342,7 +380,7 @@ if __name__ == '__main__':
     # build network
     transcriptomics_edges = build_edges(edges)
     transcriptomics_nodes = build_nodes(edges)
-    print('type of edges:', type(transcriptomics_edges))
-    print('str of edges:', transcriptomics_edges)
-    print('type of nodes:', type(transcriptomics_nodes))
-    print('str of nodes:', transcriptomics_nodes)
+    #print('type of edges:', type(transcriptomics_edges))
+    #print('str of edges:', transcriptomics_edges)
+    #print('type of nodes:', type(transcriptomics_nodes))
+    #print('str of nodes:', transcriptomics_nodes)

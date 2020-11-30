@@ -34,23 +34,26 @@ if not os.path.isdir(path): os.makedirs(path)
 version='v20180118'
 
 # manually: dict diseases to mondo
-d2m = {
-    'OMIM:223900': 'MONDO:0009131',
-    'DOID:2476': 'MONDO:0019064',
-    'Orphanet:869': 'MONDO:0009279',
-    'DOID:11589': 'MONDO:0009131',
-    'OMIM:614653': 'MONDO:0013839',
-    'OMIM:615510': 'MONDO:0014219',
-    'Orphanet:314381': 'MONDO:0013839',
-    'DOID:10595': 'MONDO:0015626',
-    'OMIM:608984': 'MONDO:0012166',
-    'DOID:5212': 'MONDO:0015286',
-    'OMIM:615273': 'MONDO:0014109',
-    'DOID:0060308': 'MONDO:0019502',
-    'DOID:0060728': 'MONDO:0014109',
-    'OMIM:231550': 'MONDO:0009279',
-    'DOID:0050602': 'MONDO:0009279'
-}
+# TODO: fill disease dict
+d2m = {}
+# HD = MONDO:0007739
+#{
+#    'OMIM:223900': 'MONDO:0009131',
+#    'DOID:2476': 'MONDO:0019064',
+#    'Orphanet:869': 'MONDO:0009279',
+#    'DOID:11589': 'MONDO:0009131',
+#    'OMIM:614653': 'MONDO:0013839',
+#    'OMIM:615510': 'MONDO:0014219',
+#    'Orphanet:314381': 'MONDO:0013839',
+#    'DOID:10595': 'MONDO:0015626',
+#    'OMIM:608984': 'MONDO:0012166',
+#    'DOID:5212': 'MONDO:0015286',
+#    'OMIM:615273': 'MONDO:0014109',
+#    'DOID:0060308': 'MONDO:0019502',
+#    'DOID:0060728': 'MONDO:0014109',
+#    'OMIM:231550': 'MONDO:0009279',
+#    'DOID:0050602': 'MONDO:0009279'
+#}
 
 
 # CHECK NETWORK SCHEMA AND NORMALIZE TO GRAPH SCHEMA
@@ -72,6 +75,7 @@ def prepare_data_edges(curated_df):
 
     # ID curie normalization
     # subject_id
+    # TODO: set up  HD clinvar variant
     curated_df['subject_id'] = (curated_df.subject_id
                                 .apply(lambda x:
                                        'ClinVarVariant:50962' if 'HGVS' in str(x) else

@@ -37,6 +37,45 @@ today = datetime.date.today()
 # QUERY MANAGEMENT FUNCTIONS
 
 
+#def get_node(node, port='7687'):
+#    try:
+#        driver = GraphDatabase.driver("bolt://localhost:{}".format(port), auth=("neo4j", "ngly1"))
+#    except neo4j.exceptions.ServiceUnavailable:
+#        raise
+#    with driver.sess
+#    return
+
+def query_shortest_paths(source, target, max_length=4, port='7687'):
+    """
+    This function gets the shortest paths between source and
+    target. max_length determines the maximum path size allowed.
+    """
+    try:
+        driver = GraphDatabase.driver("bolt://localhost:{}".format(port), auth=("neo4j", "ngly1"))
+    except neo4j.exceptions.ServiceUnavailable:
+        raise
+    outputAll = list()
+    with driver.session() as session:
+        print("kaas")
+        query = """ MATCH (source { id: '""" + source + """' }), target { id: '""" + target +  """' }), RETURN shortestPath((source)-[*..15]-(target))"""
+        result = session.run(query)
+        print(result)
+        pair = {}
+        pair['source'] = source
+        pair['target'] = target
+        # parse query results
+        output = list()
+        counter = 0
+        for record in result:
+            path_dct = parse_path(record)
+            output.append(path_dct)
+            counter += 1
+            if (counter % 100000 == 0): 
+                sys.stderr.write("Processed " + str(counter) + "\n")
+        pair['paths'] = output
+        outputAll.append(pair)
+        return result
+
 def parse_path( path ):
     """
     This function parses neo4j results.

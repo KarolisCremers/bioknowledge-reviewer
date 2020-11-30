@@ -97,6 +97,7 @@ def hit_monarch_api(node = 'HGNC:17646', rows = 2000):
 
 
 def get_edges_objects(r_out, r_in):
+	# pyspark?
     """
     This function prepares the api object responses from Monarch.
     It returns four lists, one for subjects, relations, objects, and references.
@@ -144,6 +145,7 @@ def get_edges(sub_l, rel_l, obj_l, ref_l, attribute='id'):
     :param attribute: object attribute, default 'id'
     :return: edges (as tuples) set
     """
+    # possible pyspark?
     edges = set()
     # compose tuple
     for i in range(len(sub_l)):
@@ -242,6 +244,7 @@ def get_neighbours(seed):
 
 
 def filter_edges(nodes, edges):
+	# Par potential
     """
     This function filters down edges with both nodes in a nodes list.
 
@@ -257,8 +260,35 @@ def filter_edges(nodes, edges):
 
     return keep
 
-
 def add_attributes(sub_l, rel_l, obj_l, edges):
+    """
+    improved: 1/2 time of previous version ( Nlog(N))
+    This function adds 'label' attribute to each entity in the edge.
+    :param sub_l: subjects (object) list
+    :param rel_l: relations (object) list
+    :param obj_l: objects (object) list
+    :param edges: edges set
+    :return: metaedges set
+    """
+    metaedges = set()
+    while len(edges) > 0:
+        sub_id, rel_id, obj_id, refs = edges.pop()
+        for i in range(len(sub_l)):
+            if sub_l[i]['id'] == sub_id and rel_l[i]['id'] == rel_id and obj_l[i]['id'] == obj_id:
+                metaedges.add((sub_l[i]['id'],
+                               sub_l[i]['label'],
+                               rel_l[i]['id'],
+                               rel_l[i]['label'],
+                               obj_l[i]['id'],
+                               obj_l[i]['label'],
+                               refs)
+                              )
+                del sub_l[i], rel_l[i], obj_l[i]
+                break
+    return metaedges
+
+
+def add_attributes_old(sub_l, rel_l, obj_l, edges):
     """
     This function adds 'label' attribute to each entity in the edge.
     :param sub_l: subjects (object) list
@@ -588,7 +618,8 @@ def build_edges(edges_df):
         'zfin': 'http://zfin.org/',
         'sgd': 'https://www.yeastgenome.org/',
         'hgnc': 'https://www.genenames.org/',
-        'xenbase': 'http://www.xenbase.org/'
+        'xenbase': 'http://www.xenbase.org/',
+        'dictybase': 'http://dictybase.org/'
     }
 
     # provenance variables
@@ -863,10 +894,10 @@ if __name__ == '__main__':
     #geneList = ['OMIM:615273']  # NGLY1 deficiency
     #network = monarch_expand(geneList)
     # build monarch network
-    #seedList = ['HGNC:17646','HGNC:633']
-    #neighbourList = get_neighbours_list(seedList)
+    seedList = ['HGNC:17646','HGNC:633']
+    neighbourList = get_neighbours_list(seedList)
     #print(len(neighbourList)) # 353
-    #orthophenoList = get_orthopheno_list(seedList)
+    orthophenoList = get_orthopheno_list(seedList)
     #print(len(neighbourList), len(orthophenoList))
     #geneList = sum([seedList,neighbourList,orthophenoList], [])
     #print(len(geneList))
