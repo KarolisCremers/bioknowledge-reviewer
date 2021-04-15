@@ -216,7 +216,7 @@ def do_import(neo4j_path):
         cmd = 'cd {}'.format(path_to_import)
         subprocess.call(cmd, shell=True)
         # neo4j-import
-        cmd = '{}/bin/neo4j-admin import --id-type string ' \
+        cmd = '{}/bin/neo4j-admin import --id-type STRING ' \
               '--nodes {}/ngly1_concepts.csv ' \
               '--relationships {}/ngly1_statements.csv'.format(neo4j_path, path_to_import, path_to_import)
         subprocess.call(cmd, shell=True)

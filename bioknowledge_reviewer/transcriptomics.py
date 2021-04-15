@@ -26,7 +26,7 @@ if not os.path.isdir(path): os.makedirs(path)
 # TODO: check functions
 
 
-def read_data(csv_path):
+def read_data(csv_path, sep):
     """
     This function reads the raw differential gene expression data from a CSV file.
     :param csv_path: path to gene expression CSV file string, \
@@ -37,7 +37,7 @@ def read_data(csv_path):
     print('\nThe function "read_data()" is running...')
     # import table S1 (dNGLY1 KO - transcriptomic profile)
     #csv_path = '~/workspace/ngly1-graph/regulation/ngly1-fly-chow-2018/data/supp_table_1.csv'
-    data_df = pd.read_csv('{}'.format(csv_path), sep='\t')
+    data_df = pd.read_csv('{}'.format(csv_path), sep=sep)
     print('\n* This is the size of the raw expression data structure: {}'.format(data_df.shape))
     print('* These are the expression attributes: {}'.format(data_df.columns))
     print('* This is the first record:\n{}'.format(data_df.head(1)))
@@ -225,18 +225,19 @@ def build_edges(edges):
         edges_l.append(edge)
 
     # save edges file
-    path = os.getcwd() + '/graph'
-    if not os.path.isdir(path): os.makedirs(path)
-    pd.DataFrame(edges_l).fillna('NA').to_csv('{}/rna_edges_v{}.csv'.format(path,today), index=False)
+    #path = os.getcwd() + '/graph'
+    #if not os.path.isdir(path): os.makedirs(path)
+    #pd.DataFrame(edges_l).fillna('NA').to_csv('{}/rna_edges_v{}.csv'.format(path,today), index=False)
 
     # print edges info
-    print('\n* This is the size of the edges file data structure: {}'.format(pd.DataFrame(edges_l).shape))
-    print('* These are the edges attributes: {}'.format(pd.DataFrame(edges_l).columns))
-    print('* This is the first record:\n{}'.format(pd.DataFrame(edges_l).head(1)))
-    print('\nThe transcriptomics network edges are built and saved at: {}/rna_edges_v{}.csv\n'.format(path,today))
-    print('\nFinished build_edges().\n')
+    #print('\n* This is the size of the edges file data structure: {}'.format(pd.DataFrame(edges_l).shape))
+    #print('* These are the edges attributes: {}'.format(pd.DataFrame(edges_l).columns))
+    #print('* This is the first record:\n{}'.format(pd.DataFrame(edges_l).head(1)))
+    #print('\nThe transcriptomics network edges are built and saved at: {}/rna_edges_v{}.csv\n'.format(path,today))
+    #print('\nFinished build_edges().\n')
 
     return edges_l
+
 
 
 def merge_to_node(concept_dict, gene_info):
@@ -246,16 +247,49 @@ def merge_to_node(concept_dict, gene_info):
     (uses ensembl ID's)
     """
     node_list = list()
+    missing = []
+    counter = 0
+    noHGNC = 0
+    node_dict = {}
     for idx, row in gene_info.iterrows():
-        node = Node("ensembl:" + idx)
+        if type(row["notfound"]) is not float:
+            counter += 1
+            missing.append(idx)
+            node = Node("ensembl:" + idx)
+            node.preflabel = "ensembl:" + idx
+            node_formatted = node.get_dict()
+            node_dict["ensembl:" + idx] = node_formatted
+            node_list.append(node_formatted)
+            continue
+        if type(row['HGNC']) == float or type(row['HGNC']) == None:
+            noHGNC += 1
+            node = Node("ensembl:" + idx)
+            node.preflabel = "ensembl:" + idx
+            if type(row["alias"]) is not float:
+                node.synonyms = row["alias"]
+            if type(row["summary"]) is not float:
+                node.description = row["summary"]
+            if type(row["name"]) is not float:
+                node.name = row["name"]
+            node_formatted = node.get_dict()
+            node_dict["ensembl:" + idx] = node_formatted
+            node_list.append(node_formatted)
+            continue
+        node = Node("HGNC:" + row['HGNC'])
         node.semantic_groups = "GENE"
-        node.preflabel = concept_dict[node.id]['preflabel']
+        node.preflabel = concept_dict["ensembl:" + idx]['preflabel']
         node.name = row["name"]
         node.synonyms = '|'.join(list(row['alias'])) if isinstance(
             row['alias'], list) else row['alias']
         node.description = row['summary']
-        node_list.append(node.get_dict())
-    return node_list
+        node_formatted = node.get_dict()
+        node_list.append(node_formatted)
+        node_dict["ensembl:" + idx] = node_formatted
+    print("{} nodes without available information".format(counter))
+    print("These nodes have retained their original ID. First three nodes are:")
+    print(missing[:3])
+    print("{} nodes do not have a HGNC id, retained original ID".format(noHGNC))
+    return node_list, node_dict
 
 
 def build_nodes(edges):
@@ -296,9 +330,9 @@ def build_nodes(edges):
     mg = get_client('gene')
     # symbols, scopes='symbol,alias'
     # ENSID, scopes='ensembl'
-    df = mg.querymany(ENSID, scopes='ensembl.gene', fields='alias,name,summary', size=1, as_dataframe=True)
+    df = mg.querymany(ENSID, scopes='ensembl.gene', fields='alias,name,summary,HGNC', size=1, as_dataframe=True)
     
-    nodes_l = merge_to_node(concept_dct, df)
+    nodes_l, node_dict = merge_to_node(concept_dct, df)
     #df.head(2)
     #print(df.shape)
     #print(len(concept_dct.keys()))
@@ -353,7 +387,7 @@ def build_nodes(edges):
     print('\nThe transcriptomics network nodes are built and saved at: {}/rna_nodes_v{}.csv\n'.format(path,today))
     print('\nFinished build_nodes().\n')
 
-    return nodes_l
+    return nodes_l, node_dict
 
 
 # NETWORK MANAGEMENT FUNCTIONS
@@ -367,19 +401,40 @@ def _print_nodes(nodes, filename):
 
     #return
 
+def rework_edges(edges, nodes):
+    edges_l = []
+    for idx, row in edges.iterrows():
+        subject_HGNC = nodes[row["subject_id"]]['id']
+        object_HGNC = nodes[row["object_id"]]['id']
+        row["subject_id"] = subject_HGNC
+        row["object_id"] = object_HGNC
+        edges_l.append(row)
+    # save edges file
+    path = os.getcwd() + '/graph'
+    if not os.path.isdir(path): os.makedirs(path)
+    pd.DataFrame(edges_l).fillna('NA').to_csv('{}/rna_edges_v{}.csv'.format(path,today), index=False)
+
+    # print edges info
+    print('\n* This is the size of the edges file data structure: {}'.format(pd.DataFrame(edges_l).shape))
+    print('* These are the edges attributes: {}'.format(pd.DataFrame(edges_l).columns))
+    print('* This is the first record:\n{}'.format(pd.DataFrame(edges_l).head(1)))
+    print('\nThe transcriptomics network edges are built and saved at: {}/rna_edges_v{}.csv\n'.format(path,today))
+    print('\nFinished build_edges().\n')
+    return edges_l
 
 if __name__ == '__main__':
 
     # prepare data to graph schema
-    csv_path = '~/Structured review/bioknowledge-reviewer/bioknowledge_reviewer/transcriptomics/GSE64810_mlhd_DESeq2_diffexp_DESeq2_outlier_trimmed_adjust.txt'
-    data = read_data(csv_path)
+    csv_path = '~/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/transcriptomics/HD/data/GSE64810_mlhd_DESeq2_diffexp_DESeq2_outlier_trimmed_adjust.csv'
+    data = read_data(csv_path, ",")
     clean_data = clean_data(data)
     data_edges = prepare_data_edges(clean_data)
     edges = prepare_rna_edges(data_edges)
 
     # build network
     transcriptomics_edges = build_edges(edges)
-    transcriptomics_nodes = build_nodes(edges)
+    transcriptomics_nodes, node_dict = build_nodes(edges)
+    reworked_edges = rework_edges(edges, node_dict)
     #print('type of edges:', type(transcriptomics_edges))
     #print('str of edges:', transcriptomics_edges)
     #print('type of nodes:', type(transcriptomics_nodes))
