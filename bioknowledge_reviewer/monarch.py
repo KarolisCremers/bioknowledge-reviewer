@@ -16,6 +16,7 @@ import datetime
 import pandas as pd
 from biothings_client import get_client
 from tqdm import tqdm
+import pickle
 
 
 # VARIABLES
@@ -342,29 +343,48 @@ def keep_node_type(edges, seed, nodeType='ortho'):
     return keep
 
 
-def get_connections(nodes):
+def get_connections(nodes, rerun=False):
     """
     This function returns associations retrieved from Monarch among a list of query nodes."
     :param nodes: the query nodes list
+    :param rerun: start from latest backup yes/no
     :return: edges set
     """""
-
+    all_nodes = nodes.copy()
     keep = set()
+    finished = set()
+    if rerun:
+        print("Continuing from latest backup.")
+        with open("temp/temp_keep.pickle", "rb") as keep_file:
+            keep = pickle.load(keep_file)
+        with open("temp/temp_finished.pickle", "rb") as finished_file:
+            finished = pickle.load(finished_file)
+        nodes = nodes - finished
+    t = 0
     for node in tqdm(nodes):
         try:
-            r_out, r_in = hit_monarch_api(node, 1000)
-            sub_l, rel_l, obj_l, ref_l = get_edges_objects(r_out, r_in)
-            edges = get_edges(sub_l, rel_l, obj_l, ref_l, 'id')
-            filteredEdges = filter_edges(nodes, edges)
+            r_out, r_in = hit_monarch_api(node, 1000) # query monarch
+            sub_l, rel_l, obj_l, ref_l = get_edges_objects(r_out, r_in) # deconstruct monarch result
+            edges = get_edges(sub_l, rel_l, obj_l, ref_l, 'id') # format result into graph standard format
+            filteredEdges = filter_edges(all_nodes, edges) # remove edges that do not have both object and predicate inside the query list
             metaFilteredEdges = add_attributes(sub_l, rel_l, obj_l, filteredEdges)
+            # add metadata to edge objects
             keep = keep_edges(keep, metaFilteredEdges)
-
+            finished.add(node)
         except (ValueError, KeyError):
             pass
         except:
             print('error: {}'.format(sys.exc_info()[0]))
             print(node)
-
+        t += 1
+        if not t % 1: # save temp results
+            print("Saving intermediary results in temp_keep and temp_finished, set rerun=True to restart api query from latest backup.")
+            with open("temp/temp_keep.pickle", "wb") as keep_file:
+                pickle.dump(nodes, keep_file)
+            with open("temp/temp_finished.pickle", "wb") as finished_file:
+                pickle.dump(finished, finished_file)
+    os.remove("temp/temp_keep.pickle")
+    os.remove("temp/temp_finished.pickle")
     return keep
 
 
@@ -894,10 +914,11 @@ if __name__ == '__main__':
     #geneList = ['OMIM:615273']  # NGLY1 deficiency
     #network = monarch_expand(geneList)
     # build monarch network
-    seedList = ['HGNC:17646','HGNC:633']
-    neighbourList = get_neighbours_list(seedList)
+    seedList = ['HGNC:4851','HGNC:20778', 'HGNC:16262', 'HGNC:18669']
+    get_connections(set(seedList), rerun=False)
+    #neighbourList = get_neighbours_list(seedList)
     #print(len(neighbourList)) # 353
-    orthophenoList = get_orthopheno_list(seedList)
+    #orthophenoList = get_orthopheno_list(seedList)
     #print(len(neighbourList), len(orthophenoList))
     #geneList = sum([seedList,neighbourList,orthophenoList], [])
     #print(len(geneList))
