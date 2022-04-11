@@ -1,0 +1,4 @@
+:START_ID,:TYPE,:END_ID,reference_uri,reference_supporting_text,reference_date,property_label,property_description:IGNORE,property_uri
+test1,RO:HOM0000020,test2,NA,NA,NA,in 1 to 1 orthology relationship with,NA,http://purl.obolibrary.org/obo/RO_HOM0000017
+test2,RO:0002434,test3,http://purl.obolibrary.org/obo/,reference_supporting_text,NA,interacts with,NA,http://purl.obolibrary.org/obo/RO_HOM0000020
+test1,RO:0002200,test3,NA,NA,NA,has phenotype,NA,http://purl.obolibrary.org/obo/RO_HOM0000020

@@ -1,0 +1,3 @@
+level;timestamp;external_id;external_id_prop;wdid;msg;msg_type;revid
+INFO;04/11/2022 13:09:24;test1;P6;Q427;UPDATE;None;458
+INFO;04/11/2022 13:09:25;test2;P6;Q428;UPDATE;None;460
