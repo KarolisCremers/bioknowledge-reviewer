@@ -377,7 +377,7 @@ def get_connections(nodes, rerun=False):
             print('error: {}'.format(sys.exc_info()[0]))
             print(node)
         t += 1
-        if not t % 1: # save temp results
+        if t % 20 == 0: # save temp results
             print("Saving intermediary results in temp_keep and temp_finished, set rerun=True to restart api query from latest backup.")
             with open("temp/temp_keep.pickle", "wb") as keep_file:
                 pickle.dump(nodes, keep_file)

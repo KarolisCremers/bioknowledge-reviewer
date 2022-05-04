@@ -1,0 +1,106 @@
+id,semantic_groups,preflabel,synonyms,description
+DOID:2476,DISO,hereditary spastic paraplegia,familial spastic paraplegia|French settlement disease|hereditary spastic paraparesis|HSMN V|Strumpell-Lorrain disease|Strümpell-Lorrain disease,A paraplegia that is characterized by progressive stiffness and contraction (spasticity) in the lower limbs.
+DOID:0060728,DISO,NGLY1-deficiency,congenital disorder of deglycosylation|congenital disorder of glycosylation type Iv|deficiency of N-glycanase 1|NGLY1-CDDG|Alacrimia-choreoathetosis-liver dysfunction syndrome,Human disease
+DOID:11589,DISO,Riley-Day syndrome,familial autonomic nervous dysfunction|familial dysautonomia|HSAN III,Human disease
+DOID:10595,DISO,Charcot–Marie–Tooth disease,Charcot Marie Tooth muscular atrophy|Charcot-Marie-Tooth disease|Charcot-Marie-Tooth disease、C-M-T|CMT - Charcot-Marie-Tooth disease|Peroneal muscular atrophy,"A neuromuscular disease that is characterized by a slowly progressive degeneration of the muscles of the foot, lower leg, hand and forearm."
+DOID:5212,DISO,congenital disorder of glycosylation,Carbohydrate-deficient glycoprotein syndrome,A carbohydrate metabolic disorder that involves deficient or defective glycosylation of a variety of tissue proteins and/or lipids.
+DOID:0050602,DISO,triple-A syndrome,Allgrove Syndrome|triple-A syndrome|Achalasia-Addisonianism-Alacrimia syndrome,Human disease
+DOID:0060308,DISO,autosomal recessive non-syndromic intellectual disability,autosomal recessive mental retardation|autosomal recessive non-syndromic mental retardation,A non-syndromic intellectual disability characterized by an autosomal recessive inheritance pattern.
+EC:3.5.1.52,GENE,N-glycanase 1,N-glycanase 1|NGLY1|Peptide:N-glycanase,mammalian protein found in Homo sapiens
+GO:0006515,PHYS,misfolded or incompletely synthesized protein catabolic process,degradation of misfolded or incompletely synthesized proteins|misfolded or incompletely synthesized protein breakdown|misfolded or incompletely synthesized protein catabolism|misfolded or incompletely synthesized protein degradation,The chemical reactions and pathways resulting in the breakdown of misfolded or attenuated proteins.
+GO:0071712,PHYS,ER-associated misfolded protein catabolic process,endoplasmic reticulum-associated misfolded protein catabolic process|endoplasmic reticulum-associated misfolded protein catabolism|ER-associated misfolded protein breakdown|ER-associated misfolded protein catabolism|ER-associated misfolded protein degradation|proteasomal protein catabolism of misfolded ER proteins,The chemical reactions and pathways resulting in the breakdown of misfolded proteins transported from the endoplasmic reticulum and targeted to cytoplasmic proteasomes for degradation.
+GO:0097466,PHYS,glycoprotein ERAD pathway,ER-associated glycoprotein degradation|glycoprotein ERAD|gpERAD,"An ERAD pathway whereby endoplasmic reticulum (ER)-resident glycoproteins are targeted for degradation. Includes differential processing of the glycoprotein sugar chains, retrotranslocation to the cytosol and degradation by the ubiquitin-proteasome p"
+GO:0006516,PHYS,glycoprotein catabolic process,glycoprotein breakdown|glycoprotein catabolism|glycoprotein degradation,"The chemical reactions and pathways resulting in the breakdown of glycoproteins, any protein that contains covalently bound glycose (i.e. monosaccharide) residues; the glycose occurs most commonly as oligosaccharide or fairly small polysaccharide but"
+GO:0005829,ANAT,cytosol,GO:0005829,"The part of the cytoplasm that does not contain organelles but which does contain other particulate matter, such as protein complexes."
+GO:0016567,PHYS,protein ubiquitination,GO:0016567|protein ubiquitinylation|protein ubiquitylation|ubiquitination,The process in which one or more ubiquitin groups are added to a protein.
+GO:0000502,GENE,proteasome complex,GO:0000502|proteasome,"A large multisubunit complex which catalyzes protein degradation, found in eukaryotes, archaea and some bacteria. In eukaryotes, this complex consists of the barrel shaped proteasome core complex and one or two associated proteins or complexes that a"
+GO:0006517,PHYS,protein deglycosylation,glycoprotein deglycosylation|GO:0006517,The removal of sugar residues from a glycosylated protein.
+GO:0000224,PHYS,peptide-N4-(N-acetyl-beta-glucosaminyl)asparagine amidase activity,PNGase|N-linked-glycopeptide-(N-acetyl-beta-D-glucosaminyl)-L-asparagine amidohydrolase activity,Catalysis of the reaction: 4-N-(N-acetyl-D-glucosaminyl)-protein + H2O = N-acetyl-beta-D-glucosaminylamine + peptide L-aspartate. This reaction is the hydrolysis of an N4-(acetyl-beta-D-glucosaminyl)asparagine residue in which the N-acetyl-D-glucosam
+GO:0005737,ANAT,cytoplasm,GO:0005737,"All of the contents of a cell excluding the plasma membrane and nucleus, but including other subcellular structures."
+GO:0005794,ANAT,Golgi apparatus,Golgi|GO:0005794|Golgi body|Golgi complex,"A compound membranous cytoplasmic organelle of eukaryotic cells, consisting of flattened, ribosome-free vesicles arranged in a more or less regular stack. The Golgi apparatus differs from the endoplasmic reticulum in often having slightly thicker mem"
+ClinVarVariant:50962,VARI,NGLY1 Variant 50962,NA,NA
+HP:0000007,PHYS,Autosomal recessive inheritance,Autosom recessive inheritance|Autosomal Recessive Inheritance|Autosomal recessive|Autosomal recessive form|Autosomal recessive inheritance|Autosomal recessive inheritance (qualifier value)|Autosomal recessive|autosomal inheritance recessive|autosomal recessive|autosomal recessive inheritance|autosomal recessives|recessive autosomal inheritance,"A mode of inheritance that is observed for traits related to a gene encoded on one of the autosomes (i.e., the human chromosomes 1-22) in which a trait manifests in homozygotes. In the context of medical genetics, autosomal recessive disorders manifest in homozygotes (with two copies of the mutant allele) or compound heterozygotes (whereby each copy of a gene has a distinct mutant allele)."
+HP:0000252,DISO,microcephaly,Microcephalus|microencephaly,Human disease
+HP:0000365,DISO,deafness,Hearing impairment|hearing loss,partial or total inability to hear
+HP:0000486,DISO,strabismus,kreol,Human disease
+HP:0000522,DISO,Alacrima,Alachryma,abnormality in tear production
+HP:0000657,DISO,Oculomotor apraxia,Cogan’s Ocular Motor Apraxia|Saccadic Initiation Failure|SIF|OMA|Ocular apraxia,"The absence or defect of controlled, voluntary, and purposeful eye movement"
+HP:0000726,DISO,dementia,HP:0000726,mental disease
+HP:0001250,DISO,epileptic seizure,seizure,disease
+HP:0001251,DISO,cerebellar ataxia,HP:0001251,A cerebellar disease characterized by ataxia originating in the cerebellum.
+HP:0001252,DISO,Hypotonia,Low Muscle Tone|Muscular hypotonia,Abnormally low muscle tone
+HP:0001257,DISO,spasticity,Muscle Spasticity,"muscle paralysis, increased tendon reflex activity, hypertonia"
+HP:0001263,DISO,Developmental disability,HP:0001263,Prevention
+HP:0001284,DISO,Areflexia,HP:0001284,NA
+HP:0001265,DISO,hyporeflexia,HP:0001265,NA
+HP:0001392,DISO,Liver storage or vacuolization,Hepatocyte cytoplasmic storage material or vacuolization,NA
+HP:0001395,DISO,liver cirrhosis,Cirrhosis|cirrhosis of liver|cirrhosis of the liver|liver cirrhosis,disease of the liver
+HP:0001508,DISO,Failure to thrive,decreased growth rate|Pediatric failure to thrive,NA
+HP:0001511,DISO,Intrauterine growth retardation,IUGR (intrauterine growth restriction),Intrauterine growth restriction (IUGR) refers to the poor growth of a baby while in the mother's womb during pregnancy.
+HP:0001773,DISO,Short foot,Short feet|Small feet|Hypoplastic feet,Short foot refers to a foot that is unusually short.
+HP:0001999,DISO,Abnormal facial shape,Dysmorphic facies,An abnormal morphology (form) of the face or its components.
+HP:0002019,DISO,constipation,HP:0002019,A bowel dysfunction that is characterized by infrequent or difficult evacuation of feces.
+HP:0002136,DISO,Broad-based gait,wide-based gait,An abnormal gait pattern in which persons stand and walk with their feet spaced widely apart. This is often a component of cerebellar ataxia.
+HP:0002151,DISO,Increased serum lactate,Hyperlactatemia,"Increased levels of lactate in the blood, without evidence of lactic acidosis or shock."
+HP:0002187,DISO,intellectual disability,ID|general learning disability|IDD|intellectual developmental disability|mental retardation|syndromic intellectual disability,generalized neurodevelopmental disorder
+HP:0002353,DISO,EEG (electroencephalography) abnormalities, Electroencephalogram abnormal|EGG abnormalities,"Abnormality observed by electroencephalogram (EEG), which is used to record of the brain's spontaneous electrical activity from multiple electrodes placed on the scalp."
+HP:0002376,DISO,Developmental regression,HP:0002376,"Loss of developmental skills, as manifested by loss of developmental milestones."
+HP:0002571,DISO,achalasia,achalasia of cardia|achalasia of esophagus|achalasia of esophagus (disorder)|cardiospasm|esophageal achalasia|hypertensive lower esophageal sphincter|hypertensive lower esophageal sphincter (disorder)|Lack of reflex relaxation of lower oesophageal sphincter,An esophageal disease that is characterized by an inability of the esophagus to move food toward the stomach resulting from the lower esophogeal sphincter not fully relaxing during swallowing.
+HP:0002650,DISO,scoliosis,HP:0002650,spinal medical condition
+HP:0002910,DISO,Elevated transaminases,Elevated hepatic transaminases,Elevations of the levels of transaminases in the serum.
+HP:0003409,DISO,Distal sensory impairment of all modalities,distal sensory loss,NA
+HP:0004305,DISO,movement disease,movement disease,Human disease
+HP:0006254,DISO,Elevated alpha-fetoprotein,Elevated AFP,state where Alpha-fetoprotein levels are outside of the reference range in the blood or amniotic fluid
+HP:0006579,DISO,neonatal jaundice,neonatal hyperbilirubinemia|neonatal icterus,"A pigmentation disease characterized by a high level of bilirubin in the blood, causing a yellowing of the skin and other tissues of a newborn infant."
+HP:0006958,DISO,Abnormal auditory evoked potentials,ABR abnormalities,"An abnormality of the auditory evoked potentials, which are used to trace the signal generated by a sound, from the cochlear nerve, through the lateral lemniscus, to the medial geniculate nucleus, and to the cortex."
+HP:0008259,DISO,Adrenocorticotropin receptor defect,adrenocorticotropin hormone-resistant adrenal insufficiency,NA
+HP:0009830,DISO,peripheral nervous system disease,peripheral neuropathy|peripheral nerve disease,A nervous system disease that affects the peripheral nervous system.
+HP:0010605,DISO,meibomian cyst,Chalazion|meibomian gland lipogranuloma,"A blepharitis that is characterized as a cyst in the eyelid that is caused by inflammation of a blocked meibomian gland, usually on the upper eyelid."
+HP:0012638,DISO,Imaging of brain abnormal,Abnormal brain imaging,NA
+HP:0012804,DISO,corneal ulcer,corneal ulceration,Human disease
+HP:0200055,DISO,Small hand,Small hands,NA
+MESH:D055571,PHYS,Secretory pathway,MESH:D055571,NA
+MESH:D006023,PHYS,misfolded glycoprotein,glycoprotein MESH:D006023,NA
+HP:0002828,DISO,Contracture,multiple contractures,NA
+NCBIGene:10613,GENE,ERLIN1,C10orf69|ER lipid raft associated 1|Erlin-1|ERLIN1|KE04|KEO4|SPFH1|SPG62,gene of the species Homo sapiens
+NCBIGene:11160,GENE,ERLIN2,C8orf2|ER lipid raft associated 2|Erlin-2|ERLIN2|NET32|SPFH2|SPG18,gene of the species Homo sapiens
+NCBIGene:11253,GENE,MAN1B1,MANA-ER|ERMAN1|ERManI|MAN1B1|mannosidase alpha class 1B member 1|MRT15,gene of the species Homo sapiens
+NCBIGene:173028,GENE,PNG1,PNG1|YPL096W,gene of the species Saccharomyces cerevisiae S288c
+NCBIGene:29925,GENE,GMPPB,GDP-mannose pyrophosphorylase B|GMPPB|MDDGC14|MDDGA14|MDDGB14,gene of the species Homo sapiens
+NCBIGene:29926,GENE,GMPPA,GMPPA|GDP-mannose pyrophosphorylase A|AAMR,gene of the species Homo sapiens
+NCBIGene:55768,GENE,NGLY1,CDDG|CDG1V|N-glycanase 1|NGLY1|PNG1|PNGase,gene of the species Homo sapiens
+NCBITaxon:6239,LIVB,Caenorhabditis elegans,c. elegans,NA
+NCBIGene:7415,GENE,VCP,IBMPFD|p97|TERA|VCP|valosin containing protein|ALS14|CMT2Y|HEL-220|HEL-S-70|IBMPFD1|Valosin-containing protein,gene of the species Homo sapiens
+NCBIGene:8086,GENE,AAAS,AAA|AAAS|AAASb|ADRACALA|ADRACALIN|ALADIN|aladin WD repeat nucleoporin|GL003,gene of the species Homo sapiens
+NCBIGene:81790,GENE,RNF170,RNF170|ADSA|ring finger protein 170|sensory ataxia 1 (autosomal dominant)|SNAX1,gene of the species Homo sapiens
+HP:0500032,DISO,Aberrant neuronal branching,Neuronal branching abnormalities,NA
+OMIM:223900,DISO,Riley-Day syndrome,familial autonomic nervous dysfunction|familial dysautonomia|HSAN III,Human disease
+OMIM:231550,DISO,triple-A syndrome,Achalasia-Addisonianism-Alacrimia syndrome|Allgrove Syndrome|triple-A syndrome,Human disease
+OMIM:608984,DISO,autosomal dominant sensory ataxia,ADSA,NA
+OMIM:614653,DISO,hereditary sensory neuropathy,"amilial dysautonomia, type II|congenital insensitivity to pain|familial dysautonomia, type II|hereditary sensory and autonomic neuropathy|Hereditary sensory and autonomic neuropathy (disorder)|hereditary sensory neuropathy",congenital disorder of nervous system
+OMIM:615273,DISO,NGLY1-deficiency,congenital disorder of deglycosylation|congenital disorder of glycosylation type Iv|deficiency of N-glycanase 1|NGLY1-CDDG|Alacrimia-choreoathetosis-liver dysfunction syndrome,Human disease
+OMIM:615510,DISO,"alacrima, achalasia, and mental retardation syndrome",AAMR,NA
+Orphanet:314381,DISO,Hereditary sensory and autonomic neuropathy type 6,HSAN6,NA
+Orphanet:869,DISO,triple-A syndrome,Triple A ,NA
+REACT:R-HSA-532668,PHYS,N-glycan trimming in the ER and Calnexin/Calreticulin cycle,Reactome:R-HSA-532668,NA
+REACT:R-HSA-8850590,GENE,Deglycosylation complex,Reactome:R-HSA-8850590,NA
+REACT:R-HSA-8850594,PHYS,Deglycosylation complex hydrolyses N-glycans from unfolded glycoproteins,Reactome:R-HSA-8850594,NA
+REACT:R-HSA-8866522,GENE,ERLIN1:ERLIN2 complex,Reactome:R-HSA-8866522,NA
+REACT:R-HSA-8866531,GENE,ERAD complex [endoplasmic reticulum membrane],Reactome:R-HSA-8866531,NA
+SO:0001587,VARI,Stop Gained,Stop variant,"A sequence variant whereby at least one base of a codon is changed, resulting in a premature stop codon, leading to a shortened transcript."
+EDAM:topic_0820,ANAT,type II transmembrane protein,NA,NA
+UBERON:0000007,ANAT,pituitary gland,NA,NA
+UBERON:0001007,ANAT,human digestive system,NA,NA
+UBERON:0002037,ANAT,cerebellum,NA,NA
+UBERON:0002369,ANAT,adrenal gland,NA,NA
+UMLS:C0023206,CHEM,Lectin,NA,NA
+UniProt:O75477,GENE,ER lipid raft associated 1,ERLIN1|Endoplasmic reticulum lipid raft-associated protein 1|SPFH domain-containing protein 1|Stomatin-prohibitin-flotillin-HflC/K domain-containing protein 1|Protein KE04,mammalian protein found in Homo sapiens
+UniProt:O94905,GENE,ER lipid raft associated 2,ERLIN2|Endoplasmic reticulum lipid raft-associated protein 2|SPFH domain-containing protein 2|Stomatin-prohibitin-flotillin-HflC/K domain-containing protein 2,mammalian protein found in Homo sapiens
+UniProt:Q96K19,GENE,Ring finger protein 170,RNF170|Putative LAG1-interacting protein|RING finger protein 170,mammalian protein found in Homo sapiens
+UniProt:P55072,GENE,Valosin containing protein,VCP|Valosin-containing protein|15S Mg(2+)-ATPase p97 subunit,mammalian protein found in Homo sapiens
+UniProt:Q9Y5P6,GENE,GDP-mannose pyrophosphorylase B,GDP-mannose pyrophosphorylase B|GMPPB|GTP-mannose-1-phosphate guanylyltransferase beta,mammalian protein found in Homo sapiens
+UniProt:Q96IV0,GENE,N-glycanase 1,N-glycanase 1|NGLY1|Peptide:N-glycanase,mammalian protein found in Homo sapiens
+UniProt:Q9NRG9,GENE,Aladin WD repeat nucleoporin,AAAS|Adracalin,mammalian protein found in Homo sapiens
+UniProt:Q96IJ6,GENE,GDP-mannose pyrophosphorylase A,GMPPA|GDP-mannose pyrophosphorylase A|GTP-mannose-1-phosphate guanylyltransferase alpha|GMPP-alpha,mammalian protein found in Homo sapiens
+UniProt:Q9UKM7,GENE,Mannosidase alpha class 1B member 1,"ERMan1|ER alpha-1,2-mannosidase|ER mannosidase 1|Man9GlcNAc2-specific-processing alpha-mannosidase|Mannosidase alpha class 1B member 1|MAN1B1",mammalian protein found in Homo sapiens
+InterPro:IPR001680,GENE,WD40 repeat,WD40_repeatIPR001680,InterPro Repeat

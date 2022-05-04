@@ -35,26 +35,24 @@ version='v20180118'
 
 # manually: dict diseases to mondo
 # TODO: fill disease dict
-d2m = {}
-# HD = MONDO:0007739
-#{
-#    'OMIM:223900': 'MONDO:0009131',
-#    'DOID:2476': 'MONDO:0019064',
-#    'Orphanet:869': 'MONDO:0009279',
-#    'DOID:11589': 'MONDO:0009131',
-#    'OMIM:614653': 'MONDO:0013839',
-#    'OMIM:615510': 'MONDO:0014219',
-#    'Orphanet:314381': 'MONDO:0013839',
-#    'DOID:10595': 'MONDO:0015626',
-#    'OMIM:608984': 'MONDO:0012166',
-#    'DOID:5212': 'MONDO:0015286',
-#    'OMIM:615273': 'MONDO:0014109',
-#    'DOID:0060308': 'MONDO:0019502',
-#    'DOID:0060728': 'MONDO:0014109',
-#    'OMIM:231550': 'MONDO:0009279',
-#    'DOID:0050602': 'MONDO:0009279'
-#}
-
+d2m = {   "KEGG-path:map04976" :"MONDO:0007739",
+    'OMIM:223900': 'MONDO:0009131',
+    'DOID:2476': 'MONDO:0019064',
+    'Orphanet:869': 'MONDO:0009279',
+    'DOID:11589': 'MONDO:0009131',
+    'OMIM:614653': 'MONDO:0013839',
+    'OMIM:615510': 'MONDO:0014219',
+    'Orphanet:314381': 'MONDO:0013839',
+    'DOID:10595': 'MONDO:0015626',
+    'OMIM:608984': 'MONDO:0012166',
+    'DOID:5212': 'MONDO:0015286',
+    'OMIM:615273': 'MONDO:0014109',
+    'DOID:0060308': 'MONDO:0019502',
+    'DOID:0060728': 'MONDO:0014109',
+    'OMIM:231550': 'MONDO:0009279',
+    'DOID:0050602': 'MONDO:0009279'
+}
+#HD = MONDO:0007739
 
 # CHECK NETWORK SCHEMA AND NORMALIZE TO GRAPH SCHEMA
 
@@ -273,7 +271,6 @@ def normalize_diseases_to_graph(edges_df):
         edge['reference_supporting_text'] = 'Manual extraction from Monarch Knowledge Graph.'
         edge['reference_date'] = '2018-04'
         edges_l.append(edge)
-
     d2m_edges_df = pd.DataFrame(edges_l)
     edges = pd.concat([edges_df, d2m_edges_df], ignore_index=True, join="inner")
 
@@ -360,7 +357,6 @@ def prepare_curated_edges(edges_df):
 
     ## Normalize DISEASES: add d2m network
     edges = normalize_diseases_to_graph(edges)
-
     ## Normalize PROTEINS2GENES: add g2p network
     edges = normalize_genes_to_proteins_to_graph(edges, concept_dct)
     print('\nFinished prepare_curated_edges().\n')
@@ -995,9 +991,9 @@ if __name__ == '__main__':
 
     # OR
     # download curated network (web to local csv: edges and node descriptions)
-    download_networks()
+    #download_networks()
     # read network from current drive version and concat all curated statements
-    curation_edges, curation_nodes = read_network()
+    curation_edges, curation_nodes = read_network(version="HD")
 
     # prepare data edges and nodes
     data_edges = prepare_data_edges(curation_edges)

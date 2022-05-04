@@ -113,7 +113,12 @@ def prepare_data_edges(chow):
             .assign(subject_label='HTT')
             .assign(property_id='RO:0002434')
             .assign(property_label='interacts with')
-            .assign(reference_id='PMID:26636579')
+            .assign(reference_id='PMID:27454300')
+            .assign(reference_uri='https://pubmed.ncbi.nlm.nih.gov/26636579/')
+            .assign(reference_supporting_text="Here we present a genome-wide analysis of mRNA expression in human prefrontal cortex from 20 HD and 49 neuropathologically normal controls using next generation high-throughput sequencing. Surprisingly, 19% (5,480) of the 28,087 confidently detected genes are differentially expressed (FDR<0.05) and are predominantly up-regulated. A novel hypothesis-free geneset enrichment method that dissects large gene lists into functionally and transcriptionally related groups discovers that the differentially expressed genes are enriched for immune response, neuroinflammation, and developmental genes. Markers for all major brain cell types are observed, suggesting that HD invokes a systemic response in the brain area studied. ")
+            .assign(reference_date="25/7/2016")
+            .assign(property_description="A relationship that holds between two entities in which the processes executed by the two entities are causally connected.")
+            .assign(property_uri="https://github.com/oborel/obo-relations/blob/master/ro-base.obo")
             )
     chow['object_id'] = chow.ensemble_id.apply(lambda x: 'ensembl:' + str(x).split(".")[0])
     
@@ -147,7 +152,9 @@ def prepare_rna_edges(chow):
     chow = (chow
             [['symbol', 'log2FoldChange', 'pvalue', 'padj',
               'regulation', 'source', 'subject_id', 'subject_label', 'property_id',
-              'property_label', 'reference_id', 'object_id']]
+              'property_label', 'reference_id', 'object_id',
+              'reference_uri','reference_supporting_text','reference_date',
+              'property_description', 'property_uri']]
             .rename(columns={'symbol': 'object_label', 'padj': 'fdr'})
 
             )
@@ -155,7 +162,9 @@ def prepare_rna_edges(chow):
     # reorder columns
     chow = chow[['subject_id', 'subject_label', 'property_id',
                  'property_label', 'object_id', 'object_label', 'log2FoldChange', 'pvalue', 'fdr', 'regulation',
-                 'source', 'reference_id']]
+                 'source', 'reference_id',
+                 'reference_uri','reference_supporting_text','reference_date',
+                 'property_description', 'property_uri']]
     # concat edges
     edges = pd.concat([chow, pd.DataFrame()], ignore_index=True)
 
@@ -192,7 +201,7 @@ def build_edges(edges):
     edges_l = list()
     for i, row in edges.iterrows():
         # property uri: http://purl.obolibrary.org/obo/RO_0002434
-        property_uri = 'NA'
+        property_uri = 'http://purl.obolibrary.org/obo/RO_0002434'
         if ':' in row['property_id']:
             property_uri = curie_dct[row['property_id'].split(':')[0].lower()] + row['property_id'].replace(':', '_')
 
@@ -225,26 +234,26 @@ def build_edges(edges):
         edges_l.append(edge)
 
     # save edges file
-    #path = os.getcwd() + '/graph'
-    #if not os.path.isdir(path): os.makedirs(path)
-    #pd.DataFrame(edges_l).fillna('NA').to_csv('{}/rna_edges_v{}.csv'.format(path,today), index=False)
+    path = os.getcwd() + '/graph'
+    if not os.path.isdir(path): os.makedirs(path)
+    pd.DataFrame(edges_l).fillna('NA').to_csv('{}/rna_edges_v{}.csv'.format(path,today), index=False)
 
     # print edges info
-    #print('\n* This is the size of the edges file data structure: {}'.format(pd.DataFrame(edges_l).shape))
-    #print('* These are the edges attributes: {}'.format(pd.DataFrame(edges_l).columns))
-    #print('* This is the first record:\n{}'.format(pd.DataFrame(edges_l).head(1)))
-    #print('\nThe transcriptomics network edges are built and saved at: {}/rna_edges_v{}.csv\n'.format(path,today))
-    #print('\nFinished build_edges().\n')
+    print('\n* This is the size of the edges file data structure: {}'.format(pd.DataFrame(edges_l).shape))
+    print('* These are the edges attributes: {}'.format(pd.DataFrame(edges_l).columns))
+    print('* This is the first record:\n{}'.format(pd.DataFrame(edges_l).head(1)))
+    print('\nThe transcriptomics network edges are built and saved at: {}/rna_edges_v{}.csv\n'.format(path,today))
+    print('\nFinished build_edges().\n')
 
     return edges_l
 
 
-
 def merge_to_node(concept_dict, gene_info):
     """
-    This function cobines the dictionary obtained from the edges
+    This function combines the dictionary obtained from the edges
     with the results found using mygene.info api.
     (uses ensembl ID's)
+     AUTH: Karolis
     """
     node_list = list()
     missing = []
@@ -286,10 +295,58 @@ def merge_to_node(concept_dict, gene_info):
         node_list.append(node_formatted)
         node_dict["ensembl:" + idx] = node_formatted
     print("{} nodes without available information".format(counter))
-    print("These nodes have retained their original ID. First three nodes are:")
-    print(missing[:3])
+    if len(missing) > 0:
+        print("These nodes have retained their original ID. First nodes is:")
+        print(missing[:1])
     print("{} nodes do not have a HGNC id, retained original ID".format(noHGNC))
     return node_list, node_dict
+
+
+# def convert_edges(edges, gene_info):
+#     """
+#     This function converts edge ids into HGNC id's where possible.
+#     input:
+#         edges: edge dataframe
+#         gene_info: return object frome mygeneinfo api
+#     returns:
+#         none,
+#     AUTH: Karolis
+#     """
+#     converted_edges = list()
+#     for idx, row in gene_info.iterrows():
+#         if type(row["notfound"]) is not float:
+#             #
+#             continue
+#         if type(row['HGNC']) == float or type(row['HGNC']) == None:
+#             noHGNC += 1
+#             node = Node("ensembl:" + idx)
+#             node.preflabel = "ensembl:" + idx
+#             if type(row["alias"]) is not float:
+#                 node.synonyms = row["alias"]
+#             if type(row["summary"]) is not float:
+#                 node.description = row["summary"]
+#             if type(row["name"]) is not float:
+#                 node.name = row["name"]
+#             node_formatted = node.get_dict()
+#             node_dict["ensembl:" + idx] = node_formatted
+#             node_list.append(node_formatted)
+#             continue
+#         edge = dict()
+#         edge['subject_id'] = row['subject_id']
+#         edge['object_id'] = row['object_id']
+#         edge['property_id'] = row['property_id']
+#         edge['property_label'] = row['property_label']
+#         edge['property_description'] = 'NA'
+#         edge['property_uri'] = property_uri
+#         edge['reference_uri'] = reference_uri
+#         edge[
+#             'reference_supporting_text'] = 'Here we present a genome-wide analysis of mRNA expression in human prefrontal cortex from 20 HD and 49 neuropathologically normal controls using next generation high-throughput sequencing.' if \
+#         row['source'] == 'Chow' else 'This edge comes from the RNA-seq profile dataset extracted by the XXX Lab YYYY.'
+#         edge['reference_date'] = '2015-11-04' if row['source'] == 'Chow' else 'NA'
+#         edges_l.append(edge)
+    
+#     with open() as outfile:
+#         outfile.write(converted_edges)
 
 
 def build_nodes(edges):
@@ -333,47 +390,7 @@ def build_nodes(edges):
     df = mg.querymany(ENSID, scopes='ensembl.gene', fields='alias,name,summary,HGNC', size=1, as_dataframe=True)
     
     nodes_l, node_dict = merge_to_node(concept_dct, df)
-    #df.head(2)
-    #print(df.shape)
-    #print(len(concept_dct.keys()))
-
-    # dictionaries {id: {name:, alias:, summary:}}
-#    i = 0
-#    #print(len(concept_dct))
-#    for symbol, row in df.iterrows():
-#        # associate concept to symbol
-#        for concept in concept_dct:
-#            if concept_dct[concept]['preflabel'] == symbol:
-#                i += 1
-#                # add attributes
-#                concept_dct[concept]['name'] = row['name']
-#                concept_dct[concept]['synonyms'] = row['alias']
-#                concept_dct[concept]['description'] = row['summary']
-#
-#    # build a list of nodes as list of dict, i.e a df, where a dict is a node
-#    #TODO merge the top and bottom for loops
-#    # 
-#    nodes_l = list()
-#    for concept in concept_dct:
-#        # node for subject
-#        node = dict()
-#        node['id'] = concept
-#        node['semantic_groups'] = 'GENE'
-#        if 'name' in concept_dct[concept]:
-#            node['preflabel'] = concept_dct[concept]['preflabel']
-#            node['name'] = concept_dct[concept]['name']
-#            node['synonyms'] = '|'.join(list(concept_dct[concept]['synonyms'])) if isinstance(
-#                concept_dct[concept]['synonyms'], list) else concept_dct[concept]['synonyms']
-#            node['description'] = concept_dct[concept]['description']
-#        else:
-#            print(concept)
-#            print("Has no Symbol in dataset, filling metadata with NA instead")
-#            node['preflabel'] = "NA"
-#            node['name'] = "NA"
-#            node['synonyms'] = "NA"
-#            node['description'] = "NA"
-#        nodes_l.append(node)
-
+    #convert_edges(edges, df)
 
     # save nodes file
     path = os.getcwd() + '/graph'

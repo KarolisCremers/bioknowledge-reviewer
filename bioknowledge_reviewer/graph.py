@@ -119,7 +119,7 @@ def graph_nodes(curation,monarch,transcriptomics,regulation,input_from_file=Fals
 
     # concat 1) curated 2) monarch 3) RNA-seq edges
     print('\nConcatenating into a graph...')
-    statements = pd.concat([curated_df, monarch_df, rna], ignore_index=True, join="inner")
+    statements = pd.concat([curated_df, monarch_df, rna], ignore_index=True, join="outer")
     print(statements.shape)
 
     # drop row duplicates
@@ -131,19 +131,19 @@ def graph_nodes(curation,monarch,transcriptomics,regulation,input_from_file=Fals
     # merge: 4 merges
     print('\nMerging tf-gene network to the graph...')
     # merge1: L_sub  &  tf_sub
-    merge1 = pd.merge(statements, tf, how='inner', left_on='subject_id', right_on='subject_id',
+    merge1 = pd.merge(statements, tf, how='outer', left_on='subject_id', right_on='subject_id',
                       suffixes=('_graph', '_tf'))
 
     # merge2: L_obj  &  tf_sub
-    merge2 = pd.merge(statements, tf, how='inner', left_on='object_id', right_on='subject_id',
+    merge2 = pd.merge(statements, tf, how='outer', left_on='object_id', right_on='subject_id',
                       suffixes=('_graph', '_tf'))
 
     # merge3: L_sub  &  tf_obj
-    merge3 = pd.merge(statements, tf, how='inner', left_on='subject_id', right_on='object_id',
+    merge3 = pd.merge(statements, tf, how='outer', left_on='subject_id', right_on='object_id',
                       suffixes=('_graph', '_tf'))
 
     # merge4: L_obj  &  tf_obj
-    merge4 = pd.merge(statements, tf, how='inner', left_on='object_id', right_on='object_id',
+    merge4 = pd.merge(statements, tf, how='outer', left_on='object_id', right_on='object_id',
                       suffixes=('_graph', '_tf'))
 
     # prepare merged edges: slice tf edges from merge
@@ -219,7 +219,7 @@ def graph_nodes(curation,monarch,transcriptomics,regulation,input_from_file=Fals
 
     ## concat merged edges to statements (<= curated+monarch+rna)
     # concat all 4 merges to merged edges
-    merged = pd.concat([merge1_clean, merge2_clean, merge3_clean, merge4_clean], ignore_index=True, join="inner")
+    merged = pd.concat([merge1_clean, merge2_clean, merge3_clean, merge4_clean], ignore_index=True, join="outer")
 
     # drop duplicates
     merged.drop_duplicates(inplace=True)
@@ -232,7 +232,7 @@ def graph_nodes(curation,monarch,transcriptomics,regulation,input_from_file=Fals
     print('\nThe regulation graph merged edges are saved at: {}/regulation_graph_edges_v{}.csv\n'.format(path, today))
 
     # concat merged to statements
-    statements = pd.concat([statements, merged], ignore_index=True, join="inner")
+    statements = pd.concat([statements, merged], ignore_index=True, join="outer")
     print(statements.shape)
 
     # drop duplicates
@@ -305,7 +305,7 @@ def build_edges(curation,monarch,transcriptomics,regulation,input_from_file=Fals
     # concat 1) curated 2) monarch 3) RNA-seq edges
     #TODO: check format
     print('\nConcatenating into a graph...')
-    statements = pd.concat([curated_df, monarch_df, rna, tf_merged], ignore_index=True, join="inner")
+    statements = pd.concat([curated_df, monarch_df, rna, tf_merged], ignore_index=True, join="outer")
     print(statements.shape)
 
     # drop row duplicates
@@ -423,7 +423,7 @@ def build_nodes(statements,curation,monarch,transcriptomics,regulation,input_fro
     #TODO: check format
     curated_nodes = pd.merge(curated_df, st_nodes_df, how='inner', on='id')
     monarch_nodes = pd.merge(monarch_df, st_nodes_df, how='inner', on='id')
-    rna_nodes = pd.merge(rna_df, st_nodes_df, how='inner', on='id')
+    rna_nodes = pd.merge(rna_df, st_nodes_df, how='outer', on='id')
     regulation_nodes = pd.merge(tf_df, st_nodes_df, how='inner', on='id')
     print('annotation check')
     print('curated', curated_nodes.shape)
@@ -434,7 +434,7 @@ def build_nodes(statements,curation,monarch,transcriptomics,regulation,input_fro
     # concat all, (importantly, concatenate first curated concepts with extended definitions)
     print('\nConcatenating all nodes...')
     nodes = pd.concat([curated_nodes, monarch_nodes, rna_nodes, regulation_nodes], ignore_index=True,
-                      join="inner")
+                      join="outer")
     print('graph ann', nodes.shape)
     diff = set(st_nodes_df.id) - set(nodes.id)
     print('diff', diff)
@@ -532,16 +532,28 @@ if __name__ == '__main__':
     # load networks and calculate graph nodes
     # graph_nodes_df = graph_nodes()
     # print('graph nodes df:', graph_nodes_df.shape)
-    curation_file = './graph/curated_graph_edges_v2019-03-04.csv'
-    monarch_file = './monarch/monarch_edges_v2019-03-04.csv'
-    rna_file = './graph/rna_edges_v2019-03-04.csv'
-    tf_file = './graph/regulation_edges_v2019-03-04.csv'
-    graph_nodes_list = graph_nodes(
+    curation_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/curation/data/HD/HD_curated_edges.csv'
+    monarch_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/monarch/monarch_edges_v2022-04-12.csv'
+    rna_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/rna_edges_v2022-05-04.csv'
+    tf_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/regulation_edges_v2022-04-12.csv'
+    edges = build_edges(
         curation=curation_file,
         monarch=monarch_file,
         transcriptomics=rna_file,
-        regulation=tf_file
+        regulation=tf_file, input_from_file=True
     )
+    c_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/curation/data/HD/HD_curated_nodes.csv'
+    m_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/monarch/monarch_nodes_v2022-04-12.csv'
+    r_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/rna_nodes_v2022-05-04.csv'
+    t_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/regulation_nodes_v2022-04-12.csv'
+    
+    graph_nodes_list = build_nodes(statements=edges,
+        curation=c_nodes,
+        monarch=m_nodes,
+        transcriptomics=r_nodes,
+        regulation=t_nodes, input_from_file=True
+    )
+    
     print('graph nodes list len:', len(graph_nodes_list))
     print('graph nodes set len:', len(set(graph_nodes_list)))
 

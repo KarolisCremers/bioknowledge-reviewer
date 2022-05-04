@@ -1,0 +1,3 @@
+id,semantic_groups,preflabel,name,synonyms,description
+HGNC:4851,GENE,HTT,Huntingtin,HD|IT15|LOMARS,huntingtin
+HGNC:11763,GENE,TFRC,transferrin receptor,CD71|TFR1|p90|LOC105374300|TFRC|transferrin receptor|TRANSFERRIN RECEPTOR; TFRC|K06503 transferrin receptor |(RefSeq) TFRC|TFR|T9|IMD46|p90|transferrin receptor|TRFR|TR,This gene encodes a cell surface receptor necessary for cellular iron uptake by the process of receptor-mediated endocytosis. This receptor is required for erythropoiesis and neurologic development. Multiple alternatively spliced variants have been identified. 

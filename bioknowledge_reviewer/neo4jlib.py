@@ -56,25 +56,25 @@ def save_neo4j_files(object, neo4j_path, file_type = 'statements'):
 
     # path_to_import
     graph_version = 'v{}'.format(today)
-    path_to_import = neo4j_path + '/import/ngly1'
-    path_to_version = neo4j_path + '/import/ngly1/' + graph_version
+    path_to_import = neo4j_path + '/import/HD'
+    path_to_version = neo4j_path + '/import/HD/' + graph_version
     for dir in path_to_import, path_to_version:
         if not os.path.isdir(dir): os.makedirs(dir)
     # save filling null and with sep=','
     if file_type == 'statements':
-        object.to_csv('{}/ngly1_statements.csv'.format(path_to_import),
+        object.to_csv('{}/HD_statements.csv'.format(path_to_import),
                           index=False, na_rep='NA')
-        object.to_csv('{}/ngly1_statements.csv'.format(path_to_version),
+        object.to_csv('{}/HD_statements.csv'.format(path_to_version),
                           index=False, na_rep='NA')
-        # object.fillna('NA').to_csv('{}/ngly1_statements_v{}.csv'.format(path,today), index=False)
-        return print("\nFile '{}/ngly1_statements.csv' saved.".format(path_to_import))
+        # object.fillna('NA').to_csv('{}/HD_statements_v{}.csv'.format(path,today), index=False)
+        return print("\nFile '{}/HD_statements.csv' saved.".format(path_to_import))
     elif file_type == 'concepts':
-        object.to_csv('{}/ngly1_concepts.csv'.format(path_to_import),
+        object.to_csv('{}/HD_concepts.csv'.format(path_to_import),
                         index=False, na_rep='NA')
-        object.to_csv('{}/ngly1_concepts.csv'.format(path_to_version),
+        object.to_csv('{}/HD_concepts.csv'.format(path_to_version),
                     index=False, na_rep='NA')
-        # object.fillna('NA').to_csv('{}/ngly1_concepts_v{}.csv'.format(path, today), index=False)
-        return print("\nFile '{}/ngly1_concepts.csv' saved.".format(path_to_import))
+        # object.fillna('NA').to_csv('{}/HD_concepts_v{}.csv'.format(path, today), index=False)
+        return print("\nFile '{}/HD_concepts.csv' saved.".format(path_to_import))
     else:
         return print('The user should provide the "file_type" argument with any of the [statements or concepts] value.')
 
@@ -204,7 +204,7 @@ def do_import(neo4j_path):
 
     print('\nThe function "do_import()" is running...')
     try:
-        path_to_import = neo4j_path + '/import/ngly1'
+        path_to_import = neo4j_path + '/import/HD'
         # stop neo4j
         cmd = '{}/bin/neo4j stop'.format(neo4j_path)
         subprocess.call(cmd, shell=True)
@@ -217,8 +217,8 @@ def do_import(neo4j_path):
         subprocess.call(cmd, shell=True)
         # neo4j-import
         cmd = '{}/bin/neo4j-admin import --id-type STRING ' \
-              '--nodes {}/ngly1_concepts.csv ' \
-              '--relationships {}/ngly1_statements.csv'.format(neo4j_path, path_to_import, path_to_import)
+              '--nodes {}/HD_concepts.csv ' \
+              '--relationships {}/HD_statements.csv'.format(neo4j_path, path_to_import, path_to_import)
         subprocess.call(cmd, shell=True)
         # start neo4j from database dir
         cmd = 'cd {}/data/databases/graph.db'.format(neo4j_path)
@@ -242,14 +242,14 @@ def do_import(neo4j_path):
 
 if __name__ == '__main__':
     ## get edges and files for neo4j
-    edges = get_dataframe_from_file('./graph/graph_edges_v2019-03-06.csv')
-    nodes = get_dataframe_from_file('./graph/graph_nodes_v2019-03-06.csv')
+    edges = get_dataframe_from_file('./graph/graph_edges_v2022-05-04.csv')
+    nodes = get_dataframe_from_file('./graph/graph_nodes_v2022-05-04.csv')
     statements = get_statements(edges)
     concepts = get_concepts(nodes)
 
     ## import the graph into neo4j
     # save files into neo4j import dir
-    neo4j_path = './neo4j-community-3.0.3'
+    neo4j_path = './neo4j-community-3.5.6'
     save_neo4j_files(statements, neo4j_path, file_type='statements')
     save_neo4j_files(concepts, neo4j_path, file_type='concepts')
 
