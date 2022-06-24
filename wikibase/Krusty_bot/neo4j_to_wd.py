@@ -67,11 +67,11 @@ class Bot:
 
     def run(self, force=False):
         print("create properties")
-        self.create_properties()
+        #self.create_properties()
         print("create classes")
-        self.create_classes()
+        #self.create_classes()
         print("create nodes")
-        self.create_nodes(force=force)
+        #self.create_nodes(force=force)
         print("create edges")
         self.create_edges()
 
@@ -87,7 +87,7 @@ class Bot:
         # hard coding these because they're missing or wrong in the edges file
         curie_uri['colocalizes_with'] = "http://purl.obolibrary.org/obo/RO_0002325"
         curie_uri['contributes_to'] = "http://purl.obolibrary.org/obo/RO_0002326"
-        # curie_uri['skos:exactMatch'] = "http://www.w3.org/2004/02/skos/core#exactMatch"
+        curie_uri['NA'] = "http://snomed.info/id/261988005"
 
         # all edges will be an item except for skos:exactMatch
         if 'skos:exactMatch' in curie_label:
@@ -121,6 +121,10 @@ class Bot:
         item = self.item_engine(item_name=label, domain="foo", data=s, core_props=[self.dbxref_pid])
         item.set_label(label)
         if description:
+            if len(description) > 247:
+            #Rough fix to stop API errors on descriptions longer than 250 characters.
+                truncated_description = description[0:246] + "..."
+                description = truncated_description
             item.set_description(description)
         if synonyms:
             item.set_aliases(synonyms)
@@ -146,16 +150,20 @@ class Bot:
         # from the nodes file, get the "type", which neo4j calls ":LABEL" for some strange reason
         types = set(self.nodes[':LABEL'])
         for t in types:
+            print(t)
             self.create_item(t, "", t)
 
     def create_nodes(self, force=False):
         nodes = self.nodes
+        # preflabel = Gene code
         curie_label = dict(zip(nodes['id:ID'], nodes['preflabel']))
         curie_label = {k: v for k, v in curie_label.items() if k}
         curie_label = {k: v if v else k for k, v in curie_label.items()}
         curie_synonyms = dict(zip(nodes['id:ID'], nodes['synonyms:IGNORE'].map(lambda x: x.split("|") if x else [])))
         curie_descr = dict(zip(nodes['id:ID'], nodes['description']))
+        # name = human name
         curie_name = dict(zip(nodes['id:ID'], nodes['name']))
+        # label = node type
         curie_type = dict(zip(nodes['id:ID'], nodes[':LABEL']))
 
         curie_label = sorted(curie_label.items(), key=lambda x: x[0])
@@ -165,7 +173,8 @@ class Bot:
             if len(curie) > 100:
                 continue
             synonyms = (set(curie_synonyms[curie]) | {curie_name[curie]}) - {label} - {''}
-            self.create_item(label, curie_descr[curie], curie, synonyms=synonyms,
+            # label <-> curie
+            self.create_item(curie, curie_descr[curie], label, synonyms=synonyms,
                              type_of=curie_type[curie], force=force)
 
     def create_edges(self):
@@ -174,9 +183,16 @@ class Bot:
         subj_edges = edges.groupby(":START_ID")
 
         # subj, rows = "UniProt:Q96IV0", edges[edges[':START_ID']=='ClinVarVariant:50962']
+        x = 0
         for subj, rows in tqdm(subj_edges, total=len(subj_edges)):
+            if x == 205:
+                print("debug")
             subj = self.dbxref_qid.get(rows.iloc[0][':START_ID'])
+            #Check if only id is known:
+            if not subj:
+                subj = self.dbxref_qid.get('NA (' + rows.iloc[0][':START_ID'] + ')')
             ss = self.create_subj_edges(rows)
+            x += 1
             if not ss:
                 continue
             item = self.item_engine(wd_item_id=subj, data=ss, domain="asdf")
@@ -189,7 +205,10 @@ class Bot:
         # spo, spo_rows = ('UniProt:Q96IV0', 'RO:0002331', 'GO:0006517'), rows[rows[':END_ID'] == 'GO:0006517']
         ss = []
         for spo, spo_rows in spo_edges:
+            if "flybase" in spo[0]:
+                print("debug")
             refs = self.create_statement_ref(spo_rows)
+            #
             s = self.create_statement(spo_rows.iloc[0])
             if not s:
                 continue
@@ -217,6 +236,8 @@ class Bot:
                     if ref_uri.startswith("https://www.ncbi.nlm.nih.gov/pubmed/"):
                         ref.extend([wdi_core.WDUrl(this_url, ref_url_pid, is_reference=True)
                                     for this_url in self.split_pubmed_url(ref_uri)])
+                    elif ref_uri == "NA":
+                        ref.append(wdi_core.WDUrl('https://na.na/na', ref_url_pid, is_reference=True))
                     else:
                         ref.append(wdi_core.WDUrl(ref_uri[:400], ref_url_pid, is_reference=True))
             refs.append(ref)
@@ -224,12 +245,17 @@ class Bot:
 
     def create_statement(self, row):
         subj = self.dbxref_qid.get(row[':START_ID'])
+        # check if only ID is known:
+        if not subj:
+            subj = self.dbxref_qid.get('NA (' + row[':START_ID'] + ')')
         pred = self.uri_pid.get(row['property_uri'])
         if row[':TYPE'] == "skos:exactMatch":
             obj = row[':END_ID']
         else:
             obj = self.dbxref_qid.get(row[':END_ID'])
-
+        # check if only ID is known:
+        if not obj:
+            obj = self.dbxref_qid.get('NA (' + row[':END_ID'] + ')')
         # print(subj, pred, obj)
         if not (subj and pred and obj):
             return None
@@ -275,10 +301,10 @@ class Bot:
 
     def parse_nodes_edges(self):
         node_path, edge_path = self.node_path, self.edge_path
-        edges = pd.read_csv(edge_path, dtype=str)
+        edges = pd.read_csv(edge_path, dtype=str, keep_default_na=False)
         edges = edges.fillna("")
         edges = edges.replace('None', "")
-        nodes = pd.read_csv(node_path, dtype=str)
+        nodes = pd.read_csv(node_path, dtype=str, keep_default_na=False)
         nodes = nodes.fillna("")
         nodes = nodes.replace('None', "")
 

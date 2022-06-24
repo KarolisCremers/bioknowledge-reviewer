@@ -33,6 +33,7 @@ import pandas as pd
 import os
 import datetime
 from utils import *
+import re
 
 # VARIABLES
 today = datetime.date.today()
@@ -325,13 +326,20 @@ def build_edges(curation,monarch,transcriptomics,regulation,input_from_file=Fals
         'pato': 'http://purl.obolibrary.org/obo/',
         'sio': 'http://semanticscience.org/resource/',
         'pmid': 'https://www.ncbi.nlm.nih.gov/pubmed/',
-        'encode': 'https://www.encodeproject.org/search/?searchTerm='
+        'encode': 'https://www.encodeproject.org/search/?searchTerm=',
+        'nan': 'http://snomed.info/id/408094002'
     }
     for i, row in statements.iterrows():
         if ':' in str(row['property_uri']):
             property_uri = row['property_uri']
         elif ':' in str(row['property_id']) and str(row['property_id']).split(':')[0].lower() == 'skos':
+            # not used in HD implementation
             property_uri = curie_dct[row['property_id'].split(':')[0].lower()] + row['property_id'].split(':')[1]
+        elif 'nan' == str(row['property_id']): 
+            # Handling of none descriptive edge types, within the Monarch initiative database
+            statements.at[i, 'property_id'] = "sno:408094002"
+            property_uri = curie_dct['nan']
+            property_label = "No value (qualifier value)"
         elif ':' in str(row['property_id']):
             try:
                 property_uri = curie_dct[row['property_id'].split(':')[0].lower()] + row['property_id'].replace(':',
@@ -442,6 +450,10 @@ def build_nodes(statements,curation,monarch,transcriptomics,regulation,input_fro
     # drop duplicated rows
     print('\nDrop duplicated rows...')
     nodes['synonyms'] = nodes.synonyms.apply(lambda x: str('|'.join(x)) if isinstance(x, list) else x)
+    # delete Flybase ID prefix:
+    #TODO regex uses sub, replace all special characters
+    nodes['synonyms'] = nodes.synonyms.apply(lambda x: x.replace("\\", "") if isinstance(x, str) else x)
+    nodes['preflabel'] = nodes.preflabel.apply(lambda x: re.sub("[\\\!@#$%^&*;,\.\/<>?\|\'`_+]*", "",x) if isinstance(x, str) else x)
     nodes.drop_duplicates(keep='first', inplace=True)
     print(nodes.shape)
 
@@ -530,8 +542,8 @@ if __name__ == '__main__':
     #print_graph(edges,'monarch_edges')
 
     # load networks and calculate graph nodes
-    # graph_nodes_df = graph_nodes()
-    # print('graph nodes df:', graph_nodes_df.shape)
+    #graph_nodes_df = graph_nodes()
+    #print('graph nodes df:', graph_nodes_df.shape)
     curation_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/curation/data/HD/HD_curated_edges.csv'
     monarch_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/monarch/monarch_edges_v2022-04-12.csv'
     rna_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/rna_edges_v2022-05-04.csv'
@@ -562,4 +574,4 @@ if __name__ == '__main__':
     # nodes = build_nodes(edges)
 
     # check
-    # print(graph_nodes_df.columns)
+    print(graph_nodes_df.columns)

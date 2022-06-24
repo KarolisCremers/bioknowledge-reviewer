@@ -14,7 +14,7 @@ HOST="localhost"
 WIKIBASE_PORT=8181
 WDQS_FRONTEND_PORT=8282
 USER="Admin@testbot"
-PASS="1osn7ue998m6f8nrhkdibb7hmq8t2u2f"
+PASS="e9bjrs5pshk352bnoenu62bjvuhdqfu4"
 
 mediawiki_api_url = "http://{}:{}/w/api.php".format(HOST, WIKIBASE_PORT)
 sparql_endpoint_url = "http://{}:{}/proxy/wdqs/bigdata/namespace/wdq/sparql".format(HOST, WDQS_FRONTEND_PORT)

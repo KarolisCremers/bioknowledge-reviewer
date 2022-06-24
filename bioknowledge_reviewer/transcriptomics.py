@@ -111,13 +111,13 @@ def prepare_data_edges(chow):
             .assign(source='Chow')
             .assign(subject_id='ensembl:ENSG00000197386')
             .assign(subject_label='HTT')
-            .assign(property_id='INO_0000061')
-            .assign(property_label='correlation')
+            .assign(property_id='MI_0914')
+            .assign(property_label='association')
             .assign(reference_id='PMID:27454300')
-            .assign(reference_uri='https://pubmed.ncbi.nlm.nih.gov/26636579/')
+            .assign(reference_uri='http://purl.obolibrary.org/obo/MI_0914')
             .assign(reference_supporting_text="Here we present a genome-wide analysis of mRNA expression in human prefrontal cortex from 20 HD and 49 neuropathologically normal controls using next generation high-throughput sequencing. Surprisingly, 19% (5,480) of the 28,087 confidently detected genes are differentially expressed (FDR<0.05) and are predominantly up-regulated. A novel hypothesis-free geneset enrichment method that dissects large gene lists into functionally and transcriptionally related groups discovers that the differentially expressed genes are enriched for immune response, neuroinflammation, and developmental genes. Markers for all major brain cell types are observed, suggesting that HD invokes a systemic response in the brain area studied. ")
             .assign(reference_date="25/7/2016")
-            .assign(property_description="An indirect association that two interactors are correlated in a process without defined influence of each other.")
+            .assign(property_description="Interaction between molecules that may participate in formation of one, but possibly more, physical complexes. Often describes a set of molecules that are co-purified in a single pull-down or coimmunoprecipitation but might participate in formation of distinct physical complexes sharing a common bait.")
             .assign(property_uri="http://purl.obolibrary.org/obo/INO_0000061")
             )
     chow['object_id'] = chow.ensemble_id.apply(lambda x: 'ensembl:' + str(x).split(".")[0])
@@ -201,7 +201,7 @@ def build_edges(edges):
     edges_l = list()
     for i, row in edges.iterrows():
         # property uri: http://purl.obolibrary.org/obo/RO_0002434
-        property_uri = 'http://purl.obolibrary.org/obo/RO_0002434'
+        property_uri = "http://purl.obolibrary.org/obo/INO_0000061"
         if ':' in row['property_id']:
             property_uri = curie_dct[row['property_id'].split(':')[0].lower()] + row['property_id'].replace(':', '_')
 
