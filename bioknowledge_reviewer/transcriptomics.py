@@ -252,8 +252,10 @@ def merge_to_node(concept_dict, gene_info):
     """
     This function combines the dictionary obtained from the edges
     with the results found using mygene.info api.
-    (uses ensembl ID's)
-     AUTH: Karolis
+    (calling ensembl ID's and returning HGNC ID's where possible)
+    Uses the Node object to rapidly convert node information into
+    a dictionary instance.
+    AUTH: Karolis
     """
     node_list = list()
     missing = []
@@ -304,6 +306,7 @@ def merge_to_node(concept_dict, gene_info):
 
 # def convert_edges(edges, gene_info):
 #     """
+#     Old function that may be reused on another project if necessary.
 #     This function converts edge ids into HGNC id's where possible.
 #     input:
 #         edges: edge dataframe
@@ -419,6 +422,21 @@ def _print_nodes(nodes, filename):
     #return
 
 def rework_edges(edges, nodes):
+    """
+    This function 
+    Parameters
+    ----------
+    edges : pandas DF
+        Dataframe containing edges of the network.
+    nodes : dictionary
+        Dictionary containing nodes that are contained within
+        edges of the input files.
+    Returns
+    -------
+    edges_l : Edge list object
+        A list of edges with the node id replaced with HGNC id's
+        where possible. List object is used further in other modules
+    """
     edges_l = []
     for idx, row in edges.iterrows():
         subject_HGNC = nodes[row["subject_id"]]['id']

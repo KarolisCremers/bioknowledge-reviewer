@@ -1,7 +1,7 @@
 from datetime import datetime
 from itertools import chain
 import configargparse
-
+import re
 import pandas as pd
 from tqdm import tqdm
 from wikidataintegrator import wdi_core, wdi_helpers, wdi_login
@@ -41,9 +41,130 @@ class Bot:
                                                endpoint=sparql_endpoint_url)
         self.dbxref_qid = wdi_helpers.id_mapper(self.dbxref_pid, endpoint=sparql_endpoint_url)
 
-        ####
+        
+    def parse_nodes_edges(self):
+        """
+        This function reads input files and generates
+        global nodes and edges variables.
+        These variables are Pandas DataFrame objects.
+        This function is run on generation of a Bot object.
+        """
+        node_path, edge_path = self.node_path, self.edge_path
+        edges = pd.read_csv(edge_path, dtype=str, keep_default_na=False)
+        edges = edges.fillna("")
+        edges = edges.replace('None', "")
+        nodes = pd.read_csv(node_path, dtype=str, keep_default_na=False)
+        nodes = nodes.fillna("")
+        nodes = nodes.replace('None', "")
+
+        """
+        edges = edges[edges[':TYPE'] == "rdf:type"]
+        s = set(edges[':START_ID'])
+        nodes = nodes[nodes['id:ID'].isin(s)]
+        """
+
+        # handle nodes with no label
+        blank = (nodes.preflabel == "") & (nodes.name == "")
+        nodes.loc[blank, "preflabel"] = nodes.loc[blank, "id:ID"]
+
+        # handle non-unique labels
+        dupe = nodes.duplicated(subset=['preflabel'], keep=False)
+        # append the ID to the label
+        nodes.loc[dupe, "preflabel"] = nodes.loc[dupe, "preflabel"] + " (" + nodes.loc[dupe, "id:ID"] + ")"
+
+        self.nodes, self.edges = nodes, edges
+        
+        
+    def get_equiv_prop_pid(self):
+        """
+        This function queries the Wikibase for the
+        property id (Px) of the 'equivalent property'
+        property.
+        This id is used for the extraction of all
+        property (Px) and item (Qx) id's stored
+        within the Wikibase.
+        This function is automatically called when generating
+        a Bot object.
+
+        Returns
+        -------
+        String
+            Property id (Px) assigned to 'equivalent property'
+            within the Wikibase server.
+        """
+        if self.equiv_prop_pid:
+            return self.equiv_prop_pid
+        # get the equivalent property property without knowing the PID for equivalent property!!!
+        query = '''SELECT * WHERE {
+          ?item ?prop <http://www.w3.org/2002/07/owl#equivalentProperty> .
+          ?item <http://wikiba.se/ontology#directClaim> ?prop .
+        }'''
+        pid = wdi_core.WDItemEngine.execute_sparql_query(query, endpoint=self.sparql_endpoint_url)
+        pid = pid['results']['bindings'][0]['prop']['value']
+        pid = pid.split("/")[-1]
+        self.equiv_prop_pid = pid
+        return self.equiv_prop_pid
+    
+    
+    def create_property(self, label, description, property_datatype, uri, dbxref):
+        """
+        This function is used to create any type of property object
+        on the Wikibase server. These properties have Px ID
+        on the Wikibase.
+
+        Parameters
+        ----------
+        label : String
+            Name of the property.
+        description : String
+            Extended defenition of the label.
+        property_datatype : String
+            What type of data the Wikibase the api query 
+            should parse as.
+        uri : String
+            Online definition of the property label.
+        dbxref : String
+            Name used as reference when querying the Wikibase
+            if the property exists.
+
+        Returns
+        -------
+        String
+            Property id (Px).
+        bool
+            If the property generation was performed.
+        """
+        # returns tuple (property PID: str, created: bool)
+        if uri in self.uri_pid:
+            print("property already exists: {} {}".format(self.uri_pid[uri], uri))
+            return (self.uri_pid[uri], False)
+        s = [wdi_core.WDUrl(uri, self.get_equiv_prop_pid())]
+        if self.dbxref_pid:
+            s.append(wdi_core.WDString(dbxref, self.dbxref_pid))
+        item = self.item_engine(item_name=label, domain="foo", data=s, core_props=[self.equiv_prop_pid])
+        item.set_label(label)
+        item.set_description(description)
+        if self.write:
+            item.write(self.login, entity_type="property", property_datatype=property_datatype)
+        self.uri_pid[uri] = item.wd_item_id
+        return (self.uri_pid[uri], True)
+
 
     def create_dbxref_prop(self):
+        """
+        This function is used to generate the external id
+        node property on the wikibase that is used in 
+        other functions to for database look-up.
+        This function is run on generation of the Bot object.
+
+        Returns
+        -------
+        dbxref_pid : String
+            Property id (Px) of the external ID property.
+        created : Boolean
+            If the property was added to the Wikibase.
+
+        """
         # dbxref is special because other props use it
         dbxref_pid, created = self.create_property("External ID",
                                                    "generic property for holding a (generally CURIE-fied) external ID",
@@ -52,6 +173,11 @@ class Bot:
         return dbxref_pid, created
 
     def create_initial_props(self):
+        """
+        This function generates the initial basic properties
+        of a node within the Wikibase.
+        This function is run on generation of the Bot object.
+        """
         # properties we need regardless of whats in the edges file
         self.create_property("exact match", "", "string", "http://www.w3.org/2004/02/skos/core#exactMatch",
                              "skos:exactMatch")
@@ -65,17 +191,13 @@ class Bot:
         # this is to be used for the neo4j type, which it calls ":LABEL"
         self.create_property("type", "the neo4j type, aka ':LABEL'", "wikibase-item", "http://type", "type")
 
-    def run(self, force=False):
-        print("create properties")
-        #self.create_properties()
-        print("create classes")
-        #self.create_classes()
-        print("create nodes")
-        #self.create_nodes(force=force)
-        print("create edges")
-        self.create_edges()
 
     def create_properties(self):
+        """
+        This function extracts all possible edge properties
+        from the input file and generates inconsistent edge
+        properties forcefully within the Wikibase.
+        """
         # Reads the neo4j edges file to determine properties it needs to create
         edges = self.edges
         # make sure this edges we need exist
@@ -95,23 +217,34 @@ class Bot:
         for curie, label in curie_label.items():
             self.create_property(label, "", "wikibase-item", curie_uri[curie], curie)
 
-    def create_property(self, label, description, property_datatype, uri, dbxref):
-        # returns tuple (property PID: str, created: bool)
-        if uri in self.uri_pid:
-            print("property already exists: {} {}".format(self.uri_pid[uri], uri))
-            return (self.uri_pid[uri], False)
-        s = [wdi_core.WDUrl(uri, self.get_equiv_prop_pid())]
-        if self.dbxref_pid:
-            s.append(wdi_core.WDString(dbxref, self.dbxref_pid))
-        item = self.item_engine(item_name=label, domain="foo", data=s, core_props=[self.equiv_prop_pid])
-        item.set_label(label)
-        item.set_description(description)
-        if self.write:
-            item.write(self.login, entity_type="property", property_datatype=property_datatype)
-        self.uri_pid[uri] = item.wd_item_id
-        return (self.uri_pid[uri], True)
 
     def create_item(self, label, description, ext_id, synonyms=None, type_of=None, force=False):
+        """
+        This function is used to generate an item object on
+        the Wikibase. An Item object can be any type of node
+        within the NEO4J graph and typically represent a
+        single concept.
+
+        Parameters
+        ----------
+        label : String
+            Title of the wikbiase item to be generated.
+        description : String
+            The description of the concept the wikibase item
+            represents.
+        ext_id : String
+            Concept common name.
+        synonyms : List, optional
+            List of strings containing synonyms of 
+            the object ext_id,
+            The default is None.
+        type_of : String, optional
+            The concept type (GENE,DISO etc). The default is None.
+        force : Boolean, optional
+            If the Wikibase should be forced to generate the
+            given object if it already exists within the database.
+            The default is False.
+        """
         if (not force) and ext_id in self.dbxref_qid:
             print("item already exists: {} {}".format(self.dbxref_qid[ext_id], ext_id))
             return None
@@ -132,21 +265,12 @@ class Bot:
             item.write(self.login)
         self.dbxref_qid[ext_id] = item.wd_item_id
 
-    def get_equiv_prop_pid(self):
-        if self.equiv_prop_pid:
-            return self.equiv_prop_pid
-        # get the equivalent property property without knowing the PID for equivalent property!!!
-        query = '''SELECT * WHERE {
-          ?item ?prop <http://www.w3.org/2002/07/owl#equivalentProperty> .
-          ?item <http://wikiba.se/ontology#directClaim> ?prop .
-        }'''
-        pid = wdi_core.WDItemEngine.execute_sparql_query(query, endpoint=self.sparql_endpoint_url)
-        pid = pid['results']['bindings'][0]['prop']['value']
-        pid = pid.split("/")[-1]
-        self.equiv_prop_pid = pid
-        return self.equiv_prop_pid
 
     def create_classes(self):
+        """
+        This function generates all possible "type"
+        options for a concept on the Wikibase.
+        """
         # from the nodes file, get the "type", which neo4j calls ":LABEL" for some strange reason
         types = set(self.nodes[':LABEL'])
         for t in types:
@@ -154,6 +278,17 @@ class Bot:
             self.create_item(t, "", t)
 
     def create_nodes(self, force=False):
+        """
+        This function generates NEO4J nodes as item objects
+        within the Wikbase.
+
+        Parameters
+        ----------
+        force : Boolean, optional
+            If the Wikibase should be forced to generate the
+            given object if it already exists within the database.
+            The default is False.
+        """
         nodes = self.nodes
         # preflabel = Gene code
         curie_label = dict(zip(nodes['id:ID'], nodes['preflabel']))
@@ -176,53 +311,76 @@ class Bot:
             # label <-> curie
             self.create_item(curie, curie_descr[curie], label, synonyms=synonyms,
                              type_of=curie_type[curie], force=force)
+   
+    
+    def get_qid(self, subj):
+        """
+        This function handles different possible names an object
+        may have been saved as within the wikibase when
+        querying the reference dictionary for it's item id (Qx)
+        AUTH = Karolis Cremers
+        """
+        subj_qid = self.dbxref_qid.get(subj)
+        #
+        if not subj_qid:
+            subj_qid = self.dbxref_qid.get('NA (' + subj + ')')
+        #
+        if not subj_qid:
+            subj_qid = self.dbxref_qid.get(re.sub("[\\\!@#$%^&*;,\.\/<>?\|\'`_+]*", "", self.nodes.loc[self.nodes['id:ID'] == subj,"preflabel"].iloc[0]))
+        return subj_qid
 
-    def create_edges(self):
-        edges = self.edges
 
-        subj_edges = edges.groupby(":START_ID")
-
-        # subj, rows = "UniProt:Q96IV0", edges[edges[':START_ID']=='ClinVarVariant:50962']
-        x = 0
-        for subj, rows in tqdm(subj_edges, total=len(subj_edges)):
-            if x == 205:
-                print("debug")
-            subj = self.dbxref_qid.get(rows.iloc[0][':START_ID'])
-            #Check if only id is known:
-            if not subj:
-                subj = self.dbxref_qid.get('NA (' + rows.iloc[0][':START_ID'] + ')')
-            ss = self.create_subj_edges(rows)
-            x += 1
-            if not ss:
-                continue
-            item = self.item_engine(wd_item_id=subj, data=ss, domain="asdf")
-            wdi_helpers.try_write(item, rows.iloc[0][':START_ID'], self.dbxref_pid, self.login, write=self.write)
-
-    def create_subj_edges(self, rows):
-        # input is a dataframe where all the subjects are the same
-        # i.e. write to one item
-        spo_edges = rows.groupby([":START_ID", ":TYPE", ":END_ID"])
-        # spo, spo_rows = ('UniProt:Q96IV0', 'RO:0002331', 'GO:0006517'), rows[rows[':END_ID'] == 'GO:0006517']
-        ss = []
-        for spo, spo_rows in spo_edges:
-            if "flybase" in spo[0]:
-                print("debug")
-            refs = self.create_statement_ref(spo_rows)
-            #
-            s = self.create_statement(spo_rows.iloc[0])
-            if not s:
-                continue
-            s.references = refs
-            ss.append(s)
-        return ss
-
-    # noinspection PyTypeChecker
+    def smaller_query(self, subj, subj_qid, ss, domain="asdf"):
+        """
+        This function devides a api query in half until the size
+        of the data is small enough to save in one go.
+        subj = edge starting node name
+        subj_qid = edge starting node Q id
+        ss = statements list
+        AUTH = Karolis Cremers
+        """
+        print("failed-save error fix")
+        if len(ss) == 1:
+            print("Maximum split achieved, 'failed-save' error is" + 
+                  " not because of upload size!")
+        split_left = ss[0:len(ss)//2]
+        split_right = ss[len(ss)//2:]
+        item = self.item_engine(wd_item_id=subj_qid, data=split_left, domain="asdf")
+        message = wdi_helpers.try_write(item, subj, self.dbxref_pid, self.login, write=self.write)
+        if type(message) != bool:
+            self.smaller_query(subj, subj_qid, split_left)
+        else:
+            return
+        item = self.item_engine(wd_item_id=subj_qid, data=split_right, domain="asdf")
+        message = wdi_helpers.try_write(item, subj, self.dbxref_pid, self.login, write=self.write)
+        if type(message) != bool:
+            self.smaller_query(subj, subj_qid, split_right)
+        else:
+            return
+    
+    
     def create_statement_ref(self, rows):
         """
+        This function generates the relationship edge
+        reference supporting text and uri.
         Ref supporting text gets split up into chunks of 400 chars each.
-        if the ref url is from pubmed, it gets split. Otherwise it gets cropped to 400 chars
-        """
+        if the ref url is from pubmed, it gets split. 
+        Otherwise it gets cropped to 400 chars
 
+        Parameters
+        ----------
+        rows : Pandas DataFrame
+            DataFrame containing all edges starting
+            from one concept.
+
+        Returns
+        -------
+        refs : List
+            A list of wikidataintegrator objects that
+            contain the reference text and uri of
+            the relationships.
+
+        """
         ref_url_pid = self.uri_pid['http://www.wikidata.org/entity/P854']
         ref_supp_text_pid = self.uri_pid['http://reference_supporting_text']
         refs = []
@@ -242,20 +400,32 @@ class Bot:
                         ref.append(wdi_core.WDUrl(ref_uri[:400], ref_url_pid, is_reference=True))
             refs.append(ref)
         return refs
-
+    
     def create_statement(self, row):
-        subj = self.dbxref_qid.get(row[':START_ID'])
+        """
+        This function generates an edge/relationship
+        statement for a given relationship
+
+        Parameters
+        ----------
+        row : Pandas Series
+            A single relationship between
+            two concepts.
+
+        Returns
+        -------
+        s : Wikidataintegrator object or None
+            None when relationship is poorly constructed.
+            Otherwise, it returns either a String
+            or a ItemID Wikibase object.
+        """
+        subj = self.get_qid(row[':START_ID'])
         # check if only ID is known:
-        if not subj:
-            subj = self.dbxref_qid.get('NA (' + row[':START_ID'] + ')')
         pred = self.uri_pid.get(row['property_uri'])
         if row[':TYPE'] == "skos:exactMatch":
             obj = row[':END_ID']
         else:
-            obj = self.dbxref_qid.get(row[':END_ID'])
-        # check if only ID is known:
-        if not obj:
-            obj = self.dbxref_qid.get('NA (' + row[':END_ID'] + ')')
+            obj = self.get_qid(row[':END_ID'])
         # print(subj, pred, obj)
         if not (subj and pred and obj):
             return None
@@ -264,6 +434,67 @@ class Bot:
         else:
             s = wdi_core.WDItemID(obj, pred)
         return s
+    
+
+    def create_subj_edges(self, rows):
+        """
+        This function processes the batch of edges
+        from the same node into wikibase statements
+        with reference information.
+
+        Parameters
+        ----------
+        rows : Pandas DataFrame
+            Collection of relationships starting from
+            one node.
+
+        Returns
+        -------
+        ss : List
+            List of relationship statement wikibase
+            objects with appropriate reference information.
+        """
+        # input is a dataframe where all the subjects are the same
+        # i.e. write to one item
+        spo_edges = rows.groupby([":START_ID", ":TYPE", ":END_ID"])
+        # spo, spo_rows = ('UniProt:Q96IV0', 'RO:0002331', 'GO:0006517'), rows[rows[':END_ID'] == 'GO:0006517']
+        ss = []
+        for spo, spo_rows in spo_edges:
+            refs = self.create_statement_ref(spo_rows)
+            #
+            s = self.create_statement(spo_rows.iloc[0])
+            if not s:
+                continue
+            s.references = refs
+            ss.append(s)
+        return ss
+    
+
+    def create_edges(self):
+        """
+        This function is used to upload all edges from the
+        edge input file.
+        This is done per subject in the relationship 
+        collection. Batching the upload based on all connections
+        that a node connects to.
+        """
+        edges = self.edges
+        subj_edges = edges.groupby(":START_ID")
+
+        # subj, rows = "UniProt:Q96IV0", edges[edges[':START_ID']=='ClinVarVariant:50962']
+        x = 0
+        for subj, rows in tqdm(subj_edges, total=len(subj_edges)):
+            subj_qid = self.get_qid(subj)
+            ss = self.create_subj_edges(rows)
+            x += 1
+            if not ss:
+                continue
+            item = self.item_engine(wd_item_id=subj_qid, data=ss, domain="asdf")
+            message = wdi_helpers.try_write(item, rows.iloc[0][':START_ID'], self.dbxref_pid, self.login, write=self.write)
+            if type(message) != bool:
+                # if the size of the update query is the problem:
+                if message.wd_error_msg['error']['code'] == 'failed-save':
+                    self.smaller_query(rows.iloc[0][':START_ID'], subj_qid, ss)
 
     @staticmethod
     def handle_special_ref_url(url):
@@ -299,31 +530,28 @@ class Bot:
 
         return url
 
-    def parse_nodes_edges(self):
-        node_path, edge_path = self.node_path, self.edge_path
-        edges = pd.read_csv(edge_path, dtype=str, keep_default_na=False)
-        edges = edges.fillna("")
-        edges = edges.replace('None', "")
-        nodes = pd.read_csv(node_path, dtype=str, keep_default_na=False)
-        nodes = nodes.fillna("")
-        nodes = nodes.replace('None', "")
-
+    
+    def run(self, force=False):
         """
-        edges = edges[edges[':TYPE'] == "rdf:type"]
-        s = set(edges[':START_ID'])
-        nodes = nodes[nodes['id:ID'].isin(s)]
+        This function runs all necessary functions to
+        upload a given NEO4J network onto a Wikibase server.
+
+        Parameters
+        ----------
+        force : boolean, optional
+            If the wikidataintegrator creat_item function
+            will force a new item to be created even
+            if the object already exists on the wiki.
+            The default is False.
         """
-
-        # handle nodes with no label
-        blank = (nodes.preflabel == "") & (nodes.name == "")
-        nodes.loc[blank, "preflabel"] = nodes.loc[blank, "id:ID"]
-
-        # handle non-unique labels
-        dupe = nodes.duplicated(subset=['preflabel'], keep=False)
-        # append the ID to the label
-        nodes.loc[dupe, "preflabel"] = nodes.loc[dupe, "preflabel"] + " (" + nodes.loc[dupe, "id:ID"] + ")"
-
-        self.nodes, self.edges = nodes, edges
+        print("create properties")
+        self.create_properties()
+        print("create classes")
+        self.create_classes()
+        print("create nodes")
+        self.create_nodes(force=force)
+        print("create edges")
+        self.create_edges()
 
 
 def main(user, password, mediawiki_api_url, sparql_endpoint_url, node_path, edge_path, simulate=False):

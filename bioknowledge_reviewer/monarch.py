@@ -263,7 +263,8 @@ def filter_edges(nodes, edges):
 
 def add_attributes(sub_l, rel_l, obj_l, edges):
     """
-    improved: 1/2 time of previous version ( Nlog(N))
+    Karolis:
+    improved: 1/2 time of previous version (N log(N))
     This function adds 'label' attribute to each entity in the edge.
     :param sub_l: subjects (object) list
     :param rel_l: relations (object) list
@@ -347,7 +348,7 @@ def get_connections(nodes, rerun=False):
     """
     This function returns associations retrieved from Monarch among a list of query nodes."
     :param nodes: the query nodes list
-    :param rerun: start from latest backup yes/no
+    :param rerun: start from latest backup True/False
     :return: edges set
     """""
     all_nodes = nodes.copy()

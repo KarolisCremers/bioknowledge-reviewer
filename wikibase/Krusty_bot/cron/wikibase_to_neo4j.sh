@@ -3,7 +3,7 @@ echo "This is the cron job to upload wikibase into Neo4j [start_time: $(date +%F
 echo ""
 
 # neo4j upload if the new graph has been dumped out
-neo4j=~/neo4j-wikibase
+neo4j=~/LUMC/neo4j-community-4.2.1-unix/neo4j-community-4.2.1
 nodes=$neo4j/import/concepts.csv
 edges=$neo4j/import/statements.csv
 if [[ -f $nodes && -f $edges ]]; then

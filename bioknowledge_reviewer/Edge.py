@@ -7,7 +7,12 @@ Created on Fri Nov 13 21:23:39 2020
 """
 
 class Edge():
-    
+    """
+    This is a minimal Edge object. Currently not used in the modules.
+    May be a starting point of OOP conversion of project.
+    Current function is to rapidly convert edge properties
+    into an dict object. 
+    """
     def __init__(self, object_id,
                  subject_id="ensembl:ENSG00000197386",
                  property_id="RO:0002434", 
@@ -28,6 +33,17 @@ class Edge():
         self.reference_date = reference_date
     
     def get_dict(self):
+        """
+        This function returns the edge object attributes
+        in a dictionary format.
+
+        Returns
+        -------
+        dict
+            Edge attributes given to the edge objects in a
+            dictionary format.
+
+        """
         return {'object_id': self.object_id,
                 'subject_id': self.subject_id,
                 'property_id': self.property_id,
