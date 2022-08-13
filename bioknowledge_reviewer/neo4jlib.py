@@ -129,10 +129,10 @@ def get_concepts(nodes):
 
 
 # CREATE Neo4j Community Server v3.5 INSTANCE
-def create_neo4j_instance(version='3.5.6'):
+def create_neo4j_instance(version='4.2.1'):
     """
     This function downloads an creates a Neo4j Community v3.5 server instance.
-    :param version: Neo4j server version number string (default '3.5.6')
+    :param version: Neo4j server version number string (default '4.2.1')
     :return: Neo4j server directory name string
     """
 
@@ -172,10 +172,22 @@ def create_neo4j_instance(version='3.5.6'):
         pattern = re.escape(find)
         replace = 'dbms.connector.http.listen_address=:7474'
         text = re.sub(pattern, replace, text)
+        # Whitelist Graph data science plugin
+        find = '#dbms.security.procedures.unrestricted=my.extensions.example,my.procedures.*'
+        pattern = re.escape(find)
+        replace = 'dbms.security.procedures.unrestricted=gds.*'
+        text = re.sub(pattern, replace, text)
         with open(conf_filepath, 'wt') as f:
             f.write(text)
         f.close()
         print('Configuration adjusted!')
+    
+    # Graph data science plugin install
+    if os.path.isdir('./neo4j-community-{}'.format(version)):
+        print('Installing plugins...')
+        plugin_filepath = os.path.join('.', directory, 'plugins')
+        cmd = 'wget -P {} https://graphdatascience.ninja/neo4j-graph-data-science-1.8.8.zip'.format(plugin_filepath)
+        subprocess.call(cmd, shell=True)
 
     # start server and check is running (return answer)
     if not os.path.isfile('{}/run/neo4j.pid'.format(directory)):
@@ -249,7 +261,7 @@ if __name__ == '__main__':
 
     ## import the graph into neo4j
     # save files into neo4j import dir
-    neo4j_path = './neo4j-community-3.5.6'
+    neo4j_path = './neo4j-community-4.2.1'
     save_neo4j_files(statements, neo4j_path, file_type='statements')
     save_neo4j_files(concepts, neo4j_path, file_type='concepts')
 
