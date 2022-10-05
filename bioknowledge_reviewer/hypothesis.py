@@ -56,7 +56,6 @@ def query_shortest_paths(source, target, max_length=4, port='7687'):
         raise
     outputAll = list()
     with driver.session() as session:
-        print("kaas")
         query = """ MATCH (source { id: '""" + source + """' }), target { id: '""" + target +  """' }), RETURN shortestPath((source)-[*..15]-(target))"""
         result = session.run(query)
         print(result)

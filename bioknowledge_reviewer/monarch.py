@@ -361,6 +361,7 @@ def get_connections(nodes, rerun=False):
         with open("temp/temp_finished.pickle", "rb") as finished_file:
             finished = pickle.load(finished_file)
         nodes = nodes - finished
+    print("Saving intermediary results in temp_keep and temp_finished, set rerun=True to restart api query from latest backup.")
     t = 0
     for node in tqdm(nodes):
         try:
@@ -379,7 +380,6 @@ def get_connections(nodes, rerun=False):
             print(node)
         t += 1
         if t % 20 == 0: # save temp results
-            print("Saving intermediary results in temp_keep and temp_finished, set rerun=True to restart api query from latest backup.")
             with open("temp/temp_keep.pickle", "wb") as keep_file:
                 pickle.dump(nodes, keep_file)
             with open("temp/temp_finished.pickle", "wb") as finished_file:
@@ -625,8 +625,8 @@ def build_edges(edges_df):
         'omia': 'http://omia.angis.org.au/',  # http://omia.angis.org.au/000214/9913
         'hgnc': 'https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/HGNC:', \
         # https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/HGNC:7132
-        'orpha': 'Go to ORPHANET web site (https://www.orpha.net/) and in the search field introduce the Orpha number: '
-                 'ORPHA:' # no entry in monarch for that edge
+        'orpha': 'Go to ORPHANET web site (https://www.orpha.net/) and' + 
+        'in the search field introduce the Orpha number: ORPHA:' # no entry in monarch for that edge
     }
 
     # generate static variable: dbPrefixes_dct (source/database references)

@@ -1,0 +1,7 @@
+CALL gds.graph.create.cypher('Testgraph', "MATCH (m) return id(m) as id, LABELS(m) as labels", "MATCH (n)-[e]-(m) return id(n) as source, id(m) as target, type(e) as type");
+CALL gds.alpha.ml.pipeline.linkPrediction.create('testpipeline');
+CALL gds.alpha.ml.pipeline.linkPrediction.addNodeProperty('testpipeline', 'fastRP',{mutateProperty: 'embedding',  propertyRatio: 0.0, featureProperties: [], embeddingDimension: 512,iterationWeights: [1.0,1.0,1.0],normalizationStrength: -1.0, randomSeed:7687});
+CALL gds.alpha.ml.pipeline.linkPrediction.addFeature('testpipeline', 'hadamard', {nodeProperties: ['embedding']});
+CALL gds.alpha.ml.pipeline.linkPrediction.configureSplit('testpipeline',{});
+CALL gds.alpha.ml.pipeline.linkPrediction.configureParams('testpipeline',[]);
+CALL gds.alpha.ml.pipeline.linkPrediction.train('Testgraph', {modelName: 'testmodel', pipeline: 'testpipeline', randomSeed: 7687}) YIELD modelInfo;

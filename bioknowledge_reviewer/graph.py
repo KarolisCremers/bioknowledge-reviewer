@@ -545,9 +545,9 @@ if __name__ == '__main__':
     #graph_nodes_df = graph_nodes()
     #print('graph nodes df:', graph_nodes_df.shape)
     curation_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/curation/data/HD/HD_curated_edges.csv'
-    monarch_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/monarch/monarch_edges_v2022-04-12.csv'
-    rna_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/rna_edges_v2022-05-04.csv'
-    tf_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/regulation_edges_v2022-04-12.csv'
+    monarch_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/monarch/monarch_edges_v2022-07-24.csv'
+    rna_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/rna_edges_v2022-07-24.csv'
+    tf_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/regulation_edges_v2022-07-24.csv'
     edges = build_edges(
         curation=curation_file,
         monarch=monarch_file,
@@ -555,9 +555,9 @@ if __name__ == '__main__':
         regulation=tf_file, input_from_file=True
     )
     c_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/curation/data/HD/HD_curated_nodes.csv'
-    m_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/monarch/monarch_nodes_v2022-04-12.csv'
-    r_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/rna_nodes_v2022-05-04.csv'
-    t_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/regulation_nodes_v2022-04-12.csv'
+    m_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/monarch/monarch_nodes_v2022-07-24.csv'
+    r_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/rna_nodes_v2022-07-24.csv'
+    t_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/regulation_nodes_v2022-07-24.csv'
     
     graph_nodes_list = build_nodes(statements=edges,
         curation=c_nodes,
@@ -567,11 +567,11 @@ if __name__ == '__main__':
     )
     
     print('graph nodes list len:', len(graph_nodes_list))
-    print('graph nodes set len:', len(set(graph_nodes_list)))
+    print('graph nodes set (columns) len:', len(set(graph_nodes_list)))
 
     # build network
     # edges = build_edges()
     # nodes = build_nodes(edges)
 
     # check
-    print(graph_nodes_df.columns)
+    #print(graph_nodes_df.columns)
