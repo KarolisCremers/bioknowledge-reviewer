@@ -129,7 +129,7 @@ def get_concepts(nodes):
 
 
 # CREATE Neo4j Community Server v3.5 INSTANCE
-def create_neo4j_instance(version='4.2.1'):
+def create_neo4j_instance(version='4.4.9'):
     """
     This function downloads an creates a Neo4j Community v3.5 server instance.
     :param version: Neo4j server version number string (default '4.2.1')
@@ -177,6 +177,7 @@ def create_neo4j_instance(version='4.2.1'):
         pattern = re.escape(find)
         replace = 'dbms.security.procedures.unrestricted=gds.*'
         text = re.sub(pattern, replace, text)
+        text += '\nbrowser.post_connect_cmd=:play http://localhost:8001/html/guide.html'
         with open(conf_filepath, 'wt') as f:
             f.write(text)
         f.close()
@@ -186,7 +187,7 @@ def create_neo4j_instance(version='4.2.1'):
     if os.path.isdir('./neo4j-community-{}'.format(version)):
         print('Installing plugins...')
         plugin_filepath = os.path.join('.', directory, 'plugins')
-        cmd = 'wget -P {} https://graphdatascience.ninja/neo4j-graph-data-science-1.8.8.zip'.format(plugin_filepath)
+        cmd = 'wget -P {} https://graphdatascience.ninja/neo4j-graph-data-science-2.2.2.zip'.format(plugin_filepath)
         subprocess.call(cmd, shell=True)
 
     # start server and check is running (return answer)
@@ -228,7 +229,7 @@ def do_import(neo4j_path):
         cmd = 'cd {}'.format(path_to_import)
         subprocess.call(cmd, shell=True)
         # neo4j-import
-        cmd = '{}/bin/neo4j-admin import --id-type STRING ' \
+        cmd = '{}/bin/neo4j-admin import --force --id-type STRING ' \
               '--nodes {}/HD_concepts.csv ' \
               '--relationships {}/HD_statements.csv'.format(neo4j_path, path_to_import, path_to_import)
         subprocess.call(cmd, shell=True)
@@ -253,6 +254,7 @@ def do_import(neo4j_path):
                      'the hypothesis-generation modules performance, hypothesis.py and summary.py, will be affected.\n'.format(neo4j_msg))
 
 if __name__ == '__main__':
+    create_neo4j_instance()
     ## get edges and files for neo4j
     edges = get_dataframe_from_file('./graph/graph_edges_v2022-05-04.csv')
     nodes = get_dataframe_from_file('./graph/graph_nodes_v2022-05-04.csv')
@@ -261,7 +263,7 @@ if __name__ == '__main__':
 
     ## import the graph into neo4j
     # save files into neo4j import dir
-    neo4j_path = './neo4j-community-4.2.1'
+    neo4j_path = './neo4j-community-4.4.9'
     save_neo4j_files(statements, neo4j_path, file_type='statements')
     save_neo4j_files(concepts, neo4j_path, file_type='concepts')
 

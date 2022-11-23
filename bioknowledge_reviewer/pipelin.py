@@ -52,7 +52,7 @@ def clustering(name):
                 file.write(str(record.values()).strip("[]") + "\n")
     return "Clustering done"
 
-print(clustering(graph_name))
+#print(clustering(graph_name))
 
 
 def fastrp(name):
