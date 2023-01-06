@@ -193,12 +193,16 @@ def AddNegativeExampleEmbeddings(embeddings, edges, distribution_ratio,
     edges_bool = list()
     weights = list()
     dataset = pd.DataFrame()
-    tracker = set()
+    # tracker = set()
     target_size = len(edges) * distribution_ratio
     print("Current size = {}".format(len(edges)))
     print("target size of edges = {}".format(target_size))
     
     return dataset, edges_bool, weights
+
+
+def CalculateClassWeightsMulti():
+    return #TODO
 
 
 def CalculateClassWeights(nodes, edges):
@@ -277,6 +281,9 @@ def main():
     # node_pair_train, has_edge_train, node_pair_test, has_edge_test,\
     #         node_pair_val, has_edge_val = DistributeDataset(dataset, has_real_edge)
     # print("Training model")
+    # TrainModelEmbedding()
+    # print("model evaluation")
+    
     
     
 if __name__ == "__main__":

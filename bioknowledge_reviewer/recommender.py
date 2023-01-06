@@ -32,6 +32,7 @@ topologicalAlg = {"adamicadar": "adamicAdar",
 
 # test query on 25 limit
 
+print("started")
 def test_query(algorithm="adamicAdar", limit=25):
     try:
         driver = GraphDatabase.driver("bolt://localhost:{}".format(port), auth=("neo4j", "HD"))
@@ -76,7 +77,7 @@ def multi_query(limit=25):
         print(df.sort_values(by="totalNeighbors"))
         return df.sort_values(by="totalNeighbors")
 
-df = multi_query()
+#df = multi_query()
 
 def get_targets():
     try:
@@ -145,7 +146,7 @@ def query_targets(df):
         
 results = query_targets(filtered_targets)
 print(results)
-results.to_csv("query_targets.csv")
+results.to_csv("query_targets_onto.csv")
 
 def recommend(results, inter=float(1)):
     """
@@ -190,4 +191,4 @@ def recommend(results, inter=float(1)):
 
 Recommended = recommend(results)
 print(Recommended)
-Recommended.to_csv("recommended_edges.csv")
+Recommended.to_csv("recommended_edges_onto.csv")
