@@ -105,7 +105,7 @@ def filter_paths(targets):
     This function filters the target nodes based on the paths
     between the two nodes. For example, if a gene already interacts
     with the human variant of a target orthologous gene, it does
-    not make sense to expect a new edge to between the gene and 
+    not make sense to expect a new edge between the gene and 
     the target in the context of a human centric hypothesis.
     """
     filtered_targets = targets
@@ -157,7 +157,7 @@ def recommend(results, inter=float(1)):
     number of neigbours.
     inter:
         How much do understandable results weigh in
-        the recommendations
+        the recommendations (E.G. lower common neigbour counts)
         float, between 0 and 1.
     """
     print("reccomender")
@@ -166,7 +166,7 @@ def recommend(results, inter=float(1)):
     weight = 1/inter # adamicadar OR resource allocation score / (number of common neigbours * weight)
     
     results["weightedadamicAdar"] = results["adamicAdar"] / (
-        (results["commonNeighbors"] + 1) * weight)
+        (results["commonNeighbors"] + 1) * weight) #TODO remove the +1 and find a way to prevent /0
     results["weightedadamicAdar"] = results[
         "weightedadamicAdar"] / results["weightedadamicAdar"].max()
     
