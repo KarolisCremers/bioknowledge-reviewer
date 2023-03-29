@@ -546,7 +546,7 @@ if __name__ == '__main__':
     #print('graph nodes df:', graph_nodes_df.shape)
     curation_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/curation/data/HD/HD_curated_edges.csv'
     monarch_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/monarch/monarch_edges_v2022-07-24.csv'
-    rna_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/rna_edges_v2022-07-24.csv'
+    rna_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/rna_edges_v2023-03-02.csv'
     tf_file = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/regulation_edges_v2022-07-24.csv'
     edges = build_edges(
         curation=curation_file,
@@ -556,7 +556,7 @@ if __name__ == '__main__':
     )
     c_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/curation/data/HD/HD_curated_nodes.csv'
     m_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/monarch/monarch_nodes_v2022-07-24.csv'
-    r_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/rna_nodes_v2022-07-24.csv'
+    r_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/rna_nodes_v2023-03-02.csv'
     t_nodes = '/home/karolis/LUMC/HDSR/bioknowledge-reviewer/bioknowledge_reviewer/graph/regulation_nodes_v2022-07-24.csv'
     
     graph_nodes_list = build_nodes(statements=edges,

@@ -256,8 +256,8 @@ def do_import(neo4j_path):
 if __name__ == '__main__':
     create_neo4j_instance()
     ## get edges and files for neo4j
-    edges = get_dataframe_from_file('./graph/graph_edges_v2022-05-04.csv')
-    nodes = get_dataframe_from_file('./graph/graph_nodes_v2022-05-04.csv')
+    edges = get_dataframe_from_file('./graph/graph_edges_v2023-03-02.csv')
+    nodes = get_dataframe_from_file('./graph/graph_nodes_v2023-03-02.csv')
     statements = get_statements(edges)
     concepts = get_concepts(nodes)
 

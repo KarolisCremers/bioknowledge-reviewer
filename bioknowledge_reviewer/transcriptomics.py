@@ -109,8 +109,8 @@ def prepare_data_edges(chow):
     chow = (chow
             .rename(columns={'EnsembleID': 'ensemble_id', 'Regulation': 'regulation'})
             .assign(source='Chow')
-            .assign(subject_id='ensembl:ENSG00000197386')
-            .assign(subject_label='HTT')
+            .assign(subject_id='MONDO:0007739')
+            .assign(subject_label='Huntington disease')
             .assign(property_id='MI_0914')
             .assign(property_label='association')
             .assign(reference_id='PMID:27454300')
@@ -263,14 +263,21 @@ def merge_to_node(concept_dict, gene_info):
     noHGNC = 0
     node_dict = {}
     for idx, row in gene_info.iterrows():
-        if type(row["notfound"]) is not float:
+        if type(row["notfound"]) is not float: # ID's not found in mygene.info
             counter += 1
             missing.append(idx)
-            node = Node("ensembl:" + idx)
-            node.preflabel = "ensembl:" + idx
-            node_formatted = node.get_dict()
-            node_dict["ensembl:" + idx] = node_formatted
-            node_list.append(node_formatted)
+            if ":" in idx: # checks for labels containing prefix 
+                node = Node(idx)
+                node.preflabel = idx
+                node_formatted = node.get_dict()
+                node_dict[idx] = node_formatted
+                node_list.append(node_formatted)
+            else:
+                node = Node("ensembl:" + idx)
+                node.preflabel = "ensembl:" + idx
+                node_formatted = node.get_dict()
+                node_dict["ensembl:" + idx] = node_formatted
+                node_list.append(node_formatted)
             continue
         if type(row['HGNC']) == float or type(row['HGNC']) == None:
             noHGNC += 1
@@ -393,6 +400,7 @@ def build_nodes(edges):
     df = mg.querymany(ENSID, scopes='ensembl.gene', fields='alias,name,summary,HGNC', size=1, as_dataframe=True)
     
     nodes_l, node_dict = merge_to_node(concept_dct, df)
+    
     #convert_edges(edges, df)
 
     # save nodes file
