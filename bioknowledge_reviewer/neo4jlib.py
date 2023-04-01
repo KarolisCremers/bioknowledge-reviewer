@@ -128,8 +128,8 @@ def get_concepts(nodes):
     return concepts
 
 
-# CREATE Neo4j Community Server v3.5 INSTANCE
-def create_neo4j_instance(version='4.4.9'):
+# CREATE Neo4j Community Server
+def create_neo4j_instance(version='5.1.0'):
     """
     This function downloads an creates a Neo4j Community v3.5 server instance.
     :param version: Neo4j server version number string (default '4.2.1')
@@ -175,9 +175,14 @@ def create_neo4j_instance(version='4.4.9'):
         # Whitelist Graph data science plugin
         find = '#dbms.security.procedures.unrestricted=my.extensions.example,my.procedures.*'
         pattern = re.escape(find)
-        replace = 'dbms.security.procedures.unrestricted=gds.*'
+        replace = 'dbms.security.procedures.unrestricted=gds.*,n10.*,apoc.*'
         text = re.sub(pattern, replace, text)
-        text += '\nbrowser.post_connect_cmd=:play http://localhost:8001/html/guide.html'
+        #find = '#dbms.security.procedures.allowlist=apoc.coll.*,apoc.load.*,gds.*'
+        #pattern = re.escape(find)
+        #replace = 'dbms.security.procedures.allowlist=apoc.coll.*,apoc.load.*,gds.*'
+        #text = re.sub(pattern, replace, text)
+        # add neo4j manual url as starting command on connection and neosemantics endpoint
+        text += '\nbrowser.post_connect_cmd=play http://localhost:8001/html/guide.html\ndbms.unmanaged_extension_classes=n10s.endpoint=/rdf'
         with open(conf_filepath, 'wt') as f:
             f.write(text)
         f.close()
@@ -189,15 +194,22 @@ def create_neo4j_instance(version='4.4.9'):
         plugin_filepath = os.path.join('.', directory, 'plugins')
         cmd = 'wget -P {} https://graphdatascience.ninja/neo4j-graph-data-science-2.2.2.zip'.format(plugin_filepath)
         subprocess.call(cmd, shell=True)
+        cmd = 'unzip {}/neo4j-graph-data-science-2.2.2.zip -d {}'.format(plugin_filepath, plugin_filepath)
+        subprocess.call(cmd, shell=True)
+        cmd = 'wget -P {} https://github.com/neo4j-labs/neosemantics/releases/download/5.1.0.0/neosemantics-5.1.0.0.jar'.format(plugin_filepath)
+        subprocess.call(cmd, shell=True)
+        cmd = 'mv {}/labs/apoc-5.1.0-core.jar {}/apoc-5.1.0-core.jar'.format(directory, plugin_filepath)
+        subprocess.call(cmd, shell=True)
+
 
     # start server and check is running (return answer)
     if not os.path.isfile('{}/run/neo4j.pid'.format(directory)):
         print('Starting the server...')
-        cmd = './{}/bin/neo4j start'.format(directory)
+        cmd = './{}/bin/neo4j restart'.format(directory)
         subprocess.call(cmd, shell=True)
 
     # wait for 5 seconds and check
-    time.sleep(5)
+    time.sleep(30)
     if os.path.isfile('{}/run/neo4j.pid'.format(directory)):
         print('Neo4j v{} is running.'.format(version))
     else:
@@ -229,17 +241,17 @@ def do_import(neo4j_path):
         cmd = 'cd {}'.format(path_to_import)
         subprocess.call(cmd, shell=True)
         # neo4j-import
-        cmd = '{}/bin/neo4j-admin import --force --id-type STRING ' \
+        cmd = '{}/bin/neo4j-admin database import full --id-type=string --overwrite-destination=true	 ' \
               '--nodes {}/HD_concepts.csv ' \
               '--relationships {}/HD_statements.csv'.format(neo4j_path, path_to_import, path_to_import)
         subprocess.call(cmd, shell=True)
         # start neo4j from database dir
         cmd = 'cd {}/data/databases/graph.db'.format(neo4j_path)
         subprocess.call(cmd, shell=True)
-        cmd = '{}/bin/neo4j start'.format(neo4j_path)
+        cmd = '{}/bin/neo4j restart'.format(neo4j_path)
         subprocess.call(cmd, shell=True)
         # wait for 5 seconds and check
-        time.sleep(5)
+        time.sleep(30)
         if os.path.isfile('{}/run/neo4j.pid'.format(neo4j_path)):
             neo4j_msg = 'Neo4j is running.'
         else:
@@ -249,21 +261,19 @@ def do_import(neo4j_path):
         raise
     else:
         return print('\nThe graph is imported into the server. {}'
-                     'You can start exploring and querying for hypothesis. '
-                     'If you change ports or authentication in the Neo4j configuration file, '
-                     'the hypothesis-generation modules performance, hypothesis.py and summary.py, will be affected.\n'.format(neo4j_msg))
+                     'You can start exploring and querying for hypothesis. \n'.format(neo4j_msg))
 
 if __name__ == '__main__':
     create_neo4j_instance()
     ## get edges and files for neo4j
     edges = get_dataframe_from_file('./graph/graph_edges_v2023-03-02.csv')
     nodes = get_dataframe_from_file('./graph/graph_nodes_v2023-03-02.csv')
-    statements = get_statements(edges)
+    statements = get_statements(edges)    
     concepts = get_concepts(nodes)
 
     ## import the graph into neo4j
     # save files into neo4j import dir
-    neo4j_path = './neo4j-community-4.4.9'
+    neo4j_path = './neo4j-community-5.1.0'
     save_neo4j_files(statements, neo4j_path, file_type='statements')
     save_neo4j_files(concepts, neo4j_path, file_type='concepts')
 
