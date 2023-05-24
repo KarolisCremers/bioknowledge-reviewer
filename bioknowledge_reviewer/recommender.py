@@ -52,7 +52,7 @@ def test_query(algorithm="adamicAdar", limit=25):
 
 # 279 395 988 total pair-comparisons to be done. just calling them takes 2,3551 minutes
 # focus on predicting edges originating from HTT?
-text = """MATCH (Node1:GENE {id:"HGNC:4851"})-[]->()-[]->(Node2) RETURN Node1.id, Node2.id, gds.alpha.linkprediction.adamicAdar(Node1, Node2) AS adamicAdar,
+text = """MATCH (Node1:GENE {id:"MONDO:0007739"})-[]->()-[]->(Node2) RETURN Node1.id, Node2.id, gds.alpha.linkprediction.adamicAdar(Node1, Node2) AS adamicAdar,
         gds.alpha.linkprediction.commonNeighbors(Node1, Node2) AS commonNeighbors,
         gds.alpha.linkprediction.preferentialAttachment(Node1, Node2) AS preferentialAttachment,
         gds.alpha.linkprediction.resourceAllocation(Node1, Node2) AS resourceAllocation,
@@ -87,12 +87,11 @@ def get_targets():
     print("get targets")
     with driver.session() as session:
         # WHERE filter removes hommologous edges.
-        query = """ MATCH (Node1 {id:"HGNC:4851"})-[]-()-[e]-(Node2)
-        WHERE not type(e) = 'RO:HOM0000020' AND not type(e) = 'RO:HOM0000017' AND not (Node1)-[]-(Node2)
-        RETURN Node1.id, collect(distinct Node2.id);"""
+        query = """ MATCH (n {id:"MONDO:0007739"})-[]-()-[]-(Node2)
+        RETURN collect(distinct Node2.id);"""
         result = session.run(query)
         result_list = result.values()
-        df = pd.DataFrame(result_list, columns=result.keys())
+        df = pd.Series(result_list)
         # sort by the least populated areas of the graph to maximise relative information gain.
         #print(df.sort_values(by="totalNeighbors"))
         return df
@@ -108,7 +107,7 @@ def filter_paths(targets):
     not make sense to expect a new edge between the gene and 
     the target in the context of a human centric hypothesis.
     """
-    filtered_targets = targets
+    filtered_targets = targets[0][0]
     return filtered_targets
 
 filtered_targets = filter_paths(targets)
@@ -120,14 +119,14 @@ def query_targets(df):
                                       auth=("neo4j", "ngly1"))
     except neo4j.exceptions.ServiceUnavailable:
         raise
-    result_pd = pd.DataFrame(index=["Node1.id", "Node2.id", "adamicAdar",
+    result_pd = pd.DataFrame(index=["Node1.preflabel", "Node2.preflabel", "Node2.id", "adamicAdar",
                                     "commonNeighbors", 
                                     "preferentialAttachment", 
                                     "resourceAllocation", "totalNeighbors"])
     print("\n calculate scores")
-    for target in tqdm(df.iloc[0][1]):
+    for target in tqdm(df):
         with driver.session() as session:
-            query = """ MATCH (Node1:GENE {id:"HGNC:4851"}) MATCH (Node2 {id:"%s"}) RETURN Node1.id, Node2.id, gds.alpha.linkprediction.adamicAdar(Node1, Node2) AS adamicAdar,
+            query = """MATCH (Node1 {id:"MONDO:0007739"})-[]-()-[]-(Node2 {id:"%s"}) RETURN Node1.preflabel, Node2.preflabel, Node2.id, gds.alpha.linkprediction.adamicAdar(Node1, Node2) AS adamicAdar,
             gds.alpha.linkprediction.commonNeighbors(Node1, Node2) AS commonNeighbors,
             gds.alpha.linkprediction.preferentialAttachment(Node1, Node2) AS preferentialAttachment,
             gds.alpha.linkprediction.resourceAllocation(Node1, Node2) AS resourceAllocation,
@@ -135,7 +134,7 @@ def query_targets(df):
             result = session.run(query)
             result_list = result.values()[0]
             result_pd = pd.concat([ pd.Series(result_list, 
-                                              index=["Node1.id", "Node2.id",
+                                              index=["Node1.preflabel", "Node2.preflabel", "Node2.id",
                                                      "adamicAdar", 
                                                      "commonNeighbors",
                                                      "preferentialAttachment",
@@ -146,7 +145,7 @@ def query_targets(df):
         
 results = query_targets(filtered_targets)
 print(results)
-results.to_csv("query_targets_onto.csv")
+results.to_csv("query_targets_noonto.csv")
 
 def recommend(results, inter=float(1)):
     """
@@ -191,4 +190,4 @@ def recommend(results, inter=float(1)):
 
 Recommended = recommend(results)
 print(Recommended)
-Recommended.to_csv("recommended_edges_onto.csv")
+Recommended.to_csv("recommended_edges_noonto.csv")

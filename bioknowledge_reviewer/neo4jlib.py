@@ -192,9 +192,9 @@ def create_neo4j_instance(version='5.1.0'):
     if os.path.isdir('./neo4j-community-{}'.format(version)):
         print('Installing plugins...')
         plugin_filepath = os.path.join('.', directory, 'plugins')
-        cmd = 'wget -P {} https://graphdatascience.ninja/neo4j-graph-data-science-2.2.2.zip'.format(plugin_filepath)
+        cmd = 'wget -P {} https://graphdatascience.ninja/neo4j-graph-data-science-2.3.2.zip'.format(plugin_filepath)
         subprocess.call(cmd, shell=True)
-        cmd = 'unzip {}/neo4j-graph-data-science-2.2.2.zip -d {}'.format(plugin_filepath, plugin_filepath)
+        cmd = 'unzip {}/neo4j-graph-data-science-2.3.2.zip -d {}'.format(plugin_filepath, plugin_filepath)
         subprocess.call(cmd, shell=True)
         cmd = 'wget -P {} https://github.com/neo4j-labs/neosemantics/releases/download/5.1.0.0/neosemantics-5.1.0.0.jar'.format(plugin_filepath)
         subprocess.call(cmd, shell=True)
@@ -266,8 +266,8 @@ def do_import(neo4j_path):
 if __name__ == '__main__':
     create_neo4j_instance()
     ## get edges and files for neo4j
-    edges = get_dataframe_from_file('./graph/graph_edges_v2023-03-02.csv')
-    nodes = get_dataframe_from_file('./graph/graph_nodes_v2023-03-02.csv')
+    edges = get_dataframe_from_file('./graph/graph_edges_v2022-07-24.csv')
+    nodes = get_dataframe_from_file('./graph/graph_nodes_v2022-07-24.csv')
     statements = get_statements(edges)    
     concepts = get_concepts(nodes)
 

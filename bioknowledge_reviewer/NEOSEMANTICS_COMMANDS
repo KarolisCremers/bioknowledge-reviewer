@@ -2,7 +2,6 @@ CREATE CONSTRAINT n10s_unique_uri FOR (r:Resource)
 REQUIRE r.uri IS UNIQUE;
 CALL n10s.graphconfig.init();
 CALL n10s.onto.import.fetch("http://purl.obolibrary.org/obo/go.owl","RDF/XML");
-[Class2 rdfs:subClassOf Class1]
 
 // find all GO terms that overlap with current SR terms:
 CALL {MATCH (n:PHYS)
@@ -11,7 +10,7 @@ return terms}
 WITH terms
 MATCH (m:n4sch__Class)
 WHERE m.n4sch__name in terms
-return m
+return m;
 
 // Use list of overlapping nodes to merge nodes:
 CALL {MATCH (n:PHYS)
@@ -22,12 +21,12 @@ WHERE m.n4sch__name in terms
 CALL apoc.refactor.mergeNodes([n, m],
      {properties:"combine", mergeRels:true})
 Yield node
-return node
+return node;
 
 // assign GO terms as physiology.
 MATCH (n:n4sch__Class)
 SET n:PHYS
-RETURN count(n)
+RETURN count(n);
 
 // remove RDF class label
 CALL db.labels()
@@ -49,11 +48,3 @@ CALL apoc.create.removeLabels(class, labels)
 YIELD node
 RETURN node, labels(node) AS labels;
 
-// Remove RDF properties
-MATCH (n:PHYS)
-SET n.id = n.n4sch__name, n.preflabel = n.n4sch__label
-REMOVE n.n4sch__name, n.n4sch__label
-return n
-SET n.id = n.n4sch__name, n.preflabel = n.n4sch__label
-REMOVE n.n4sch__name, n.n4sch__label
-return n

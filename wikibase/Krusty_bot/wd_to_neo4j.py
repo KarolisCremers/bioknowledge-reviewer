@@ -74,7 +74,7 @@ class Bot:
             return
         else:
             # create a Neo4j server instance
-            neo4j_dir = neo4jlib.create_neo4j_instance('4.2.1')
+            neo4j_dir = neo4jlib.create_neo4j_instance('5.1.0')
             print('The name of the neo4j directory is {}'.format(neo4j_dir))
             df_edges = pd.read_csv(self.edge_out_path)
             df_nodes = pd.read_csv(self.node_out_path)
