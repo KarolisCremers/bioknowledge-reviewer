@@ -1,0 +1,114 @@
+= Iron in HD Guide
+
+
+== The graph
+
+This is the Structured Review on iron in Huntington's Disease.
+If you are not yet connected to the NEO4J server of the SR, please use the command below
+and connect to neo4j://localhost:7687:
+
+[source,cypher]
+----
+:server connect
+----
+
+=== How does information relate to each-other within the graph?
+
+We can visualize how the collected information within the SR interconnect by using the following command:
+
+[source,cypher]
+----
+CALL db.schema.visualization()
+----
+
+=== A summary of the collected information
+
+You can find a total node and edge count together with their total numbers by pressing the database button on the top left of the browser.
+For a more detailed summary, run the command below:
+
+[source,cypher]
+----
+CALL db.labels() YIELD label
+CALL apoc.cypher.run('MATCH (:`'+label+'`) RETURN count(*) as count',{}) YIELD value
+RETURN label, value.count
+----
+
+Examples of queries for specific information within the next slide.
+
+== Specific queries
+
+This page holds a collection of queries that can be used to find specific information within the SR.
+
+=== Finding a node based on their id
+
+:nodeLabelA: pass:a[`<span value-key="nodeLabelA">GENE</span>`]
+:propertyKeyA: pass:a[`<span value-key="propertyKeyA">id</span>`]
+:propertyValueA: pass:a['<span value-key="propertyValueA">HGNC:4851</span>']
+
+[source,cypher,subs=attributes]
+----
+MATCH (node:{nodeLabelA} { {propertyKeyA}: {propertyValueA} }) 
+RETURN node
+----
+
+=== Finding relationships between nodes
+:nodeLabelA: pass:a[<span value-key="nodeLabelA"></span>]
+:propertyKeyA: pass:a[<span value-key="propertyKeyA"></span>]
+:propertyValueA: pass:a[<span value-key="propertyValueA"></span>]
+:steps: pass:a[<span value-key="steps"></span>]
+:nodeLabelB: pass:a[<span value-key="nodeLabelB"></span>]
+:propertyKeyB: pass:a[<span value-key="propertyKeyB"></span>]
+:propertyValueB: pass:a[<span value-key="propertyValue"></span>]
+
+[cols="7", opts="headers"]
+|===
+
+| Label
+| Property
+| Value
+
+| steps
+
+| Label
+| Property
+| Value
+
+| pass:a[<span value-key="nodeLabelA">PHYS</span>]
+| pass:a[<span value-key="propertyKeyA">preflabel</span>]
+| pass:a[<span value-key="propertyValueA">"Iron uptake and transport"</span>]
+
+| pass:a[<span value-key="steps"> 3 </span>]
+
+| pass:a[<span value-key="nodeLabelB">DISO</span>]
+| pass:a[<span value-key="propertyKeyB">preflabel</span>]
+| pass:a[<span value-key="propertyValue">"Huntington disease"</span>]
+
+|===
+
+[source,cypher,subs=attributes]
+----
+MATCH p=(node2:PHYS {preflabel:"Iron uptake and transport"})-[*3]-(node2:DISO {preflabel:"Huntington disease"}) 
+return p
+----
+
+=== Finding indirect relationships between nodes
+:nodeLabelA: pass:a[`<span value-key="nodeLabelA">GENE</span>`]
+:propertyKeyA: pass:a[`<span value-key="propertyKeyA">id</span>`]
+:propertyValueA: pass:a['<span value-key="propertyValueA">HGNC:4851</span>']
+:numberOfEdges: pass:a['<span value-key="numberOfEdges">2</span>']
+:nodeLabelB: pass:a[`<span value-key="nodeLabelB">GENE</span>`]
+:propertyKeyB: pass:a[`<span value-key="propertyKeyB">id</span>`]
+:propertyValueB: pass:a['<span value-key="propertyValue">HGNC:4851</span>']
+
+[source,cypher,subs=attributes]
+----
+MATCH p=(node:{nodeLabelA} { {propertyKeyA}: {propertyValueA} })-[1..{numberOfEdges}]-(node2:{nodeLabelB} {{propertyKeyB}: {propertyValueB} }) 
+RETURN p
+----
+
+== Third Slide: Links
+
+To add information to the graph one can use the wikibase containing the SR information within this link:
+* http://localhost:8181/wiki/Main_Page[Structure Review Wikibase instance]
+
+
