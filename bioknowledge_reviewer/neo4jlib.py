@@ -200,6 +200,8 @@ def create_neo4j_instance(version='5.1.0'):
         subprocess.call(cmd, shell=True)
         cmd = 'mv {}/labs/apoc-5.1.0-core.jar {}/apoc-5.1.0-core.jar'.format(directory, plugin_filepath)
         subprocess.call(cmd, shell=True)
+	with open(os.path.join('.', directory, 'conf', 'apoc.conf')) as file:
+		file.write("apoc.export.file.enabled=true")
 
 
     # start server and check is running (return answer)

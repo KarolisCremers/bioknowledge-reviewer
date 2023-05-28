@@ -1,0 +1,9 @@
+[submodule "bioknowledge_reviewer/bioknowledge_reviewer/LibKGE/kge"]
+	path = bioknowledge_reviewer/bioknowledge_reviewer/LibKGE/kge
+	url = https://github.com/uma-pi1/kge
+[submodule "bioknowledge_reviewer/LibKGE/kge"]
+	path = bioknowledge_reviewer/LibKGE/kge
+	url = https://github.com/uma-pi1/kge
+[submodule "bioknowledge_reviewer/guide"]
+	path = bioknowledge_reviewer/guide
+	url = https://github.com/neo4j-contrib/neo4j-guides

@@ -1,0 +1,16 @@
+1024000000
+Error while writing to Wikidata
+[Errno Expecting value] <br />
+<b>Fatal error</b>:  Allowed memory size of 134217728 bytes exhausted (tried to allocate 897024 bytes) in <b>/var/www/html/includes/libs/rdbms/database/DatabaseMysqli.php</b> on line <b>47</b><br />
+: 0
+ 54%|███████████████████████████████████████████████████████████████████████████████████████▉                                                                          | 4607/8492 [20:25<17:13,  3.76it/s]
+Traceback (most recent call last):
+  File "/home/karolis/LUMC/HDSR/bioknowledge-reviewer/wikibase/Krusty_bot/neo4j_to_wd.py", line 381, in <module>
+    main(**d)
+  File "/home/karolis/LUMC/HDSR/bioknowledge-reviewer/wikibase/Krusty_bot/neo4j_to_wd.py", line 365, in main
+    bot.run(force=False)
+  File "/home/karolis/LUMC/HDSR/bioknowledge-reviewer/wikibase/Krusty_bot/neo4j_to_wd.py", line 76, in run
+    self.create_edges()
+  File "/home/karolis/LUMC/HDSR/bioknowledge-reviewer/wikibase/Krusty_bot/neo4j_to_wd.py", line 238, in create_edges
+    if message.wd_error_msg['error']['code'] == 'failed-save':
+AttributeError: 'JSONDecodeError' object has no attribute 'wd_error_msg'

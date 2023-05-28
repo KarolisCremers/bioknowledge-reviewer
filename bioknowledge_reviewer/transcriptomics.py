@@ -431,7 +431,7 @@ def _print_nodes(nodes, filename):
 
 def rework_edges(edges, nodes):
     """
-    This function 
+    This function replaces original id's with HGNC ids in edges
     Parameters
     ----------
     edges : pandas DF
@@ -444,6 +444,7 @@ def rework_edges(edges, nodes):
     edges_l : Edge list object
         A list of edges with the node id replaced with HGNC id's
         where possible. List object is used further in other modules
+    AUTH: Karolis
     """
     edges_l = []
     for idx, row in edges.iterrows():

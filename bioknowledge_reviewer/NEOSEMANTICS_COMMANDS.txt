@@ -1,3 +1,4 @@
+// Set up Neosemantics settings to graph and fetch Gene Ontology:
 CREATE CONSTRAINT n10s_unique_uri FOR (r:Resource)
 REQUIRE r.uri IS UNIQUE;
 CALL n10s.graphconfig.init();
@@ -23,12 +24,12 @@ CALL apoc.refactor.mergeNodes([n, m],
 Yield node
 return node;
 
-// assign GO terms as physiology.
+// assign GO terms as physiology node types:
 MATCH (n:n4sch__Class)
 SET n:PHYS
 RETURN count(n);
 
-// remove RDF class label
+// remove RDF class label:
 CALL db.labels()
 YIELD label WHERE label <> "PHYS"
 WITH collect(label) AS labels
@@ -38,7 +39,7 @@ CALL apoc.create.removeLabels(class, labels)
 YIELD node
 RETURN node, labels(node) AS labels;
 
-// reuse RDF id and label 
+// reuse RDF id and label:
 CALL db.labels()
 YIELD label WHERE label <> "PHYS"
 WITH collect(label) AS labels
